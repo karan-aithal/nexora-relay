@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# .NET
+*.user
+project.lock.json
+.vs/
+
+# Node / Angular
+node_modules/
+web/**/dist/
+.angular/
+
+# Firmware build
+firmware/**/build/
+
+# Secrets — never commit (CLAUDE.md section 7.6)
+*.pfx
+*.key
+appsettings.*.Local.json
+.env
+
+# IDE / OS
+.idea/
+*.swp
+.DS_Store

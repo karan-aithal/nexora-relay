@@ -1,0 +1,18 @@
+{
+  "solution": {
+    "path": "OpenForecourt.sln",
+    "projects": [
+    "src/OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj",
+    "src/OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj",
+    "src/OpenForecourt.Crypto/OpenForecourt.Crypto.csproj",
+    "src/OpenForecourt.Emv/OpenForecourt.Emv.csproj",
+    "src/OpenForecourt.HostSimulator/OpenForecourt.HostSimulator.csproj",
+    "src/OpenForecourt.Iso8583/OpenForecourt.Iso8583.csproj",
+    "src/OpenForecourt.Opt/OpenForecourt.Opt.csproj",
+    "src/OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj",
+    "src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj",
+    "src/OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj",
+    "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,csx}]
+indent_size = 4
+# File-scoped namespaces (CLAUDE.md section 6)
+csharp_style_namespace_declarations = file_scoped:error
+csharp_style_prefer_primary_constructors = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+# Nullable is enforced via Directory.Build.props
+
+[*.{json,yml,yaml,csproj,props,targets}]
+indent_size = 2
+
+[*.{c,h}]
+indent_size = 4
+
+[*.{ps1,sh}]
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
+
+# Test method names use Given_When_Then style underscores by convention.
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
