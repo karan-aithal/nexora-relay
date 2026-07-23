@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    name: Build & test (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # OpenForecourt.CI.slnf excludes the Windows-only adapters
+      # (Adapters.Pcsc, Adapters.Serial — net10.0-windows), which cannot
+      # build on Linux. The full solution builds on Windows dev machines.
+      - name: Restore
+        run: dotnet restore OpenForecourt.CI.slnf
+
+      - name: Build
+        run: dotnet build OpenForecourt.CI.slnf --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test OpenForecourt.CI.slnf --no-build --configuration Release --verbosity normal
