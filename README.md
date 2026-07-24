@@ -71,3 +71,41 @@ ADRs: [0001 ports and adapters](docs/adr/0001-ports-and-adapters.md),
 [0002 .NET 10 LTS](docs/adr/0002-dotnet-10-lts.md),
 [0003 SQLite WAL journal](docs/adr/0003-sqlite-wal-journal.md).
 Walkthrough: [00 — scaffold and ports](docs/walkthroughs/00-scaffold.md).
+
+### Phase 1 — ISO 8583 codec and acquiring host simulator ✅
+
+A correct, well-tested ISO 8583 message codec and an async TCP acquirer that authorises,
+declines, times out, detects duplicates and reverses.
+
+- **Data-driven codec** (`OpenForecourt.Iso8583`) over a documented dialect, **OFC-87**
+  ([docs/protocol-iso8583.md](docs/protocol-iso8583.md)). A field table drives all
+  encode/decode — no per-field parsing — so a different acquirer is a different table, not
+  different code. Primary/secondary 8-byte bitmaps, Fixed/LLVAR/LLLVAR, ASCII numeric,
+  alphanumeric and binary (field 55). Decoding is total: malformed input returns a
+  diagnostic `Result`, never an exception.
+- `Iso8583Message` is immutable after build, indexer + `TryGetField`, and a field-by-field
+  `ToString()` trace **with the PAN masked**. Every point where the 1987 spec text was not
+  verified is marked `SPEC-UNVERIFIED` in code and document.
+- **Framing** — 2-byte big-endian length prefix over `PipeReader`, correct under
+  byte-at-a-time and coalesced reads, with oversized/zero/truncated-length rejection.
+- **Host simulator** (`OpenForecourt.HostSimulator`) — JSON-configured rule engine (approve
+  below a threshold, decline by PAN, inject latency, inject silence), duplicate detection on
+  terminal + STAN, and an in-memory ledger so reversals are verifiable. Decision, transport
+  and ledger are separated so timing behaviour is unit-testable without waiting.
+- Tests: seeded property-based round trip, six byte-exact human-annotated golden files,
+  bitmap edge cases, framing edge cases, engine decisions, an end-to-end TCP concurrency
+  test (N terminals racing a shared STAN → exactly one approval), and a PAN-leak test that
+  captures every trace sink.
+
+Run the demo (starts the host, sends echo/approval/duplicate/declines/timeout/reversal, and
+prints the decoded trace of every message both directions):
+
+```bash
+./scripts/demo-01.sh          # Linux/macOS
+pwsh ./scripts/demo-01.ps1    # Windows
+```
+
+ADRs: [0004 data-driven codec](docs/adr/0004-iso8583-data-driven-codec.md),
+[0005 host decision vs transport](docs/adr/0005-host-simulator-decision-vs-transport.md).
+Walkthrough: [01 — ISO 8583](docs/walkthroughs/01-iso8583.md).
+Protocol: [OFC-87 dialect](docs/protocol-iso8583.md).

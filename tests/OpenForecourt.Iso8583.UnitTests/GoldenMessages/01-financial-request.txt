@@ -1,0 +1,26 @@
+# 0200 financial request — the everyday case: fixed numeric fields, one LLVAR (the PAN),
+# no secondary bitmap.
+#
+# 30 32 30 30                          MTI  "0200"  financial request
+# 72 20 00 00 00 80 80 00              primary bitmap
+#     0x72 = 0111 0010 -> bits 2,3,4,7   (fields 2, 3, 4, 7; bit 1 clear = no secondary)
+#     0x20 = 0010 0000 -> bit 11         (field 11)
+#     0x80 in byte 5 -> bit 41           (field 41)
+#     0x80 in byte 6 -> bit 49           (field 49)
+# 31 36                                field 2 LLVAR length "16"
+# 34 31 31 ...                         field 2 value "4111111111111111"
+# 30 30 30 30 30 30                    field 3  "000000"        purchase, default accounts
+# 30 ... 35 30 30 30                   field 4  "000000005000"  50.00 in minor units
+# 30 37 32 34 31 34 33 30 30 35        field 7  "0724143005"    24 July 14:30:05
+# 30 30 30 31 32 33                    field 11 "000123"        STAN
+# 4F 50 54 30 30 30 30 31              field 41 "OPT00001"      terminal id, ASCII
+# 38 32 36                             field 49 "826"           GBP
+mti: 0200
+field 2: 4111111111111111
+field 3: 000000
+field 4: 000000005000
+field 7: 0724143005
+field 11: 000123
+field 41: OPT00001
+field 49: 826
+hex: 303230307220000000808000313634313131313131313131313131313131303030303030303030303030303035303030303732343134333030353030303132334F50543030303031383236

@@ -12,7 +12,9 @@
     "src/OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj",
     "src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj",
     "src/OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj",
-    "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj"
+    "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj",
+    "tests/OpenForecourt.Iso8583.UnitTests/OpenForecourt.Iso8583.UnitTests.csproj",
+    "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj"
     ]
   }
 }

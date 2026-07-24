@@ -1,0 +1,19 @@
+# 0200 carrying EMV data — the LLLVAR binary case. Field 55 is the only field in this
+# dialect whose length prefix counts BYTES rather than characters, because its content is
+# raw BER-TLV, not text.
+#
+# 70 20 00 00 00 80 02 00              primary bitmap
+#     0x70 = 0111 0000 -> bits 2, 3, 4
+#     0x20 -> bit 11 ; 0x80 in byte 5 -> bit 41 ; 0x02 in byte 6 -> bit 55
+# 30 31 34                             field 55 LLLVAR length "014" = 14 bytes
+# 9F 27 01 80                          tag 9F27 (cryptogram information data), 1 byte, 0x80 = ARQC
+# 9F 36 02 00 01                       tag 9F36 (application transaction counter), 2 bytes
+# 9F 10 02 01 0A                       tag 9F10 (issuer application data), 2 bytes
+mti: 0200
+field 2: 4111111111111111
+field 3: 000000
+field 4: 000000005000
+field 11: 000123
+field 41: OPT00001
+field 55: 9F2701809F360200019F1002010A
+hex: 3032303070200000008002003136343131313131313131313131313131313030303030303030303030303030353030303030303132334F505430303030313031349F2701809F360200019F1002010A

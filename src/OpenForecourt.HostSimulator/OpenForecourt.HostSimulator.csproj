@@ -1,3 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <!-- The acquiring host simulator: TCP endpoint + rule engine + ledger. -->
+    <OutputType>Exe</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Iso8583/OpenForecourt.Iso8583.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="hostrules.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

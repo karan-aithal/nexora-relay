@@ -1,0 +1,19 @@
+# 0210 financial response, approved. Note what is NOT here: no field 2. The host echoes the
+# transaction's identity (3, 4, 11, 41) but the PAN does not travel back.
+#
+# 30 32 31 30                          MTI  "0210"
+# 30 20 00 00 06 80 00 00              primary bitmap
+#     0x30 = 0011 0000 -> bits 3,4
+#     0x20 -> bit 11
+#     0x06 = 0000 0110 in byte 4 -> bits 38, 39
+#     0x80 in byte 5 -> bit 41
+# 41 30 30 30 30 31                    field 38 "A00001"  authorisation code
+# 30 30                                field 39 "00"      approved
+mti: 0210
+field 3: 000000
+field 4: 000000005000
+field 11: 000123
+field 38: A00001
+field 39: 00
+field 41: OPT00001
+hex: 30323130302000000680000030303030303030303030303030303530303030303031323341303030303130304F50543030303031

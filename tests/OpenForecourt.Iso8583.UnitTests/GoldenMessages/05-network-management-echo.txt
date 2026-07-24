@@ -1,0 +1,15 @@
+# 0800 echo test — the smallest useful message, and a second secondary-bitmap case.
+# Field 70 is above 64, so bit 1 is set again.
+#
+# 30 38 30 30                          MTI "0800"
+# 82 20 00 00 00 00 00 00              primary bitmap
+#     0x82 = 1000 0010 -> bit 1 (secondary follows), bit 7 (field 7)
+#     0x20 -> bit 11
+# 04 00 00 00 00 00 00 00              secondary bitmap
+#     byte 0 covers fields 65..72; 0x04 = 0000 0100 -> the sixth bit -> field 70
+# 33 30 31                             field 70 "301" = echo test
+mti: 0800
+field 7: 0724143005
+field 11: 000900
+field 70: 301
+hex: 303830308220000000000000040000000000000030373234313433303035303030393030333031

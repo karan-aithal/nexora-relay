@@ -1,0 +1,21 @@
+# 0400 reversal request — the secondary bitmap case. Field 90 is field number 90, above 64,
+# so bit 1 of the primary bitmap is set and a second 8-byte bitmap follows.
+#
+# 30 34 30 30                          MTI "0400"
+# B0 20 00 00 00 80 00 00              primary bitmap
+#     0xB0 = 1011 0000 -> bit 1 (secondary follows), bits 3, 4
+# 00 00 00 40 00 00 00 00              secondary bitmap, covering fields 65..128
+#     byte 3 covers fields 89..96; 0x40 = 0100 0000 -> the second bit -> field 90
+# field 90 is 42 digits:
+#     "0200"        original MTI
+#     "000123"      original STAN — this is what the host looks up
+#     "0724143005"  original transmission date and time
+#     "00000000000" acquiring institution id   (zero-filled: no institution registry here)
+#     "00000000000" forwarding institution id
+mti: 0400
+field 3: 000000
+field 4: 000000005000
+field 11: 000456
+field 41: OPT00001
+field 90: 020000012307241430050000000000000000000000
+hex: 30343030B02000000080000000000040000000003030303030303030303030303030353030303030303435364F50543030303031303230303030303132333037323431343330303530303030303030303030303030303030303030303030

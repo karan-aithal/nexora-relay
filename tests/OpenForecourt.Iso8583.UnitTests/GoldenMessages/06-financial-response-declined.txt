@@ -1,0 +1,15 @@
+# 0110 authorisation response, declined 51 (insufficient funds) because the amount is at or
+# above the configured approval threshold. No field 38: there is no authorisation code for a
+# transaction that was not authorised.
+#
+# 30 31 31 30                          MTI "0110"
+# 30 20 00 00 02 80 00 00              primary bitmap
+#     0x02 = 0000 0010 in byte 4 -> bit 39 only (compare with golden 02, which has 0x06)
+# 35 31                                field 39 "51"
+mti: 0110
+field 3: 000000
+field 4: 000000025000
+field 11: 000789
+field 39: 51
+field 41: OPT00001
+hex: 30313130302000000280000030303030303030303030303030323530303030303037383935314F50543030303031

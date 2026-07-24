@@ -1,0 +1,22 @@
+{
+  // The simulated acquirer's behaviour. Test PANs only (CLAUDE.md section 7).
+  "approveBelowMinor": 10000,
+
+  // PAN -> response code. Takes priority over the amount rule.
+  "declineByPan": {
+    "5555555555554444": "54",
+    "4000000000000002": "05",
+    "4000000000000051": "51"
+  },
+
+  // The host never answers for these PANs, so terminal timeout handling can be exercised.
+  "noResponsePans": [ "378282246310005" ],
+
+  // Applied to every response.
+  "latencyMs": 25,
+
+  // Added on top of latencyMs for specific PANs.
+  "extraLatencyByPanMs": {
+    "4000000000000101": 1500
+  }
+}
