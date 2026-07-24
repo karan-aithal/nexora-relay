@@ -14,7 +14,8 @@
     "src/OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj",
     "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj",
     "tests/OpenForecourt.Iso8583.UnitTests/OpenForecourt.Iso8583.UnitTests.csproj",
-    "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj"
+    "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj",
+    "tests/OpenForecourt.Emv.UnitTests/OpenForecourt.Emv.UnitTests.csproj"
     ]
   }
 }

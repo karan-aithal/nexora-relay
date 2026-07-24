@@ -1,0 +1,49 @@
+{
+  "name": "Contactless Mastercard (PPSE, no CVM)",
+  "kind": "Contactless",
+  "supportsPse": false,
+  "supportsPpse": true,
+  "applications": [
+    {
+      "aid": "A0000000041010",
+      "label": "OFC DEBIT",
+      "priority": 1,
+      "aip": "0800",
+      "afl": "08010100",
+      "pdol": [
+        { "tag": "9F66", "length": 4 },
+        { "tag": "9F02", "length": 6 },
+        { "tag": "9F1A", "length": 2 },
+        { "tag": "95", "length": 5 },
+        { "tag": "5F2A", "length": 2 },
+        { "tag": "9A", "length": 3 },
+        { "tag": "9C", "length": 1 },
+        { "tag": "9F37", "length": 4 }
+      ],
+      "records": {
+        "1:1": {
+          "5A": "5555555555554444",
+          "57": "5555555555554444D30122010000000000",
+          "5F24": "301231",
+          "5F20": "4F464320544553542043415244",
+          "5F34": "00",
+          "8C": "9F02069F03069F1A0295055F2A029A039C019F3704",
+          "9F07": "FF00",
+          "9F0D": "0000000000",
+          "9F0E": "0000000000",
+          "9F0F": "F0FFFFFFFF"
+        }
+      },
+      "getData": {
+        "9F36": "0000",
+        "9F13": "0000"
+      },
+      "generateAc": {
+        "cid": "80",
+        "cryptogram": "1122334455667788",
+        "iad": "0110A04003220000",
+        "atc": "0010"
+      }
+    }
+  ]
+}

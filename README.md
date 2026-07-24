@@ -109,3 +109,49 @@ ADRs: [0004 data-driven codec](docs/adr/0004-iso8583-data-driven-codec.md),
 [0005 host decision vs transport](docs/adr/0005-host-simulator-decision-vs-transport.md).
 Walkthrough: [01 — ISO 8583](docs/walkthroughs/01-iso8583.md).
 Protocol: [OFC-87 dialect](docs/protocol-iso8583.md).
+
+### Phase 2 — Card layer: BER-TLV, virtual card, PC/SC, EMV online flow ✅
+
+A terminal that runs a real EMV online-authorisation flow against a card we also wrote, over
+the same `ICardReader` boundary the physical Windows PC/SC reader implements.
+
+- **BER-TLV codec** (`OpenForecourt.Emv/BerTlv`) — multi-byte tags packed into an integer
+  losslessly, constructed/primitive tree, **byte-identical** re-serialisation, and a tag
+  dictionary so traces read as names. Parsing is total: truncated tags, over-long lengths, the
+  indefinite form and adversarially deep nesting all return a diagnostic `Result`, never an
+  exception or a loop.
+- **Virtual card** (`OpenForecourt.VirtualCard`) — the card side of the conversation, an APDU
+  responder driven by JSON profiles under `tests/testdata/cards/`. Handles SELECT (PPSE/PSE and
+  by AID with a 6F/A5 FCI), GET PROCESSING OPTIONS (AIP + AFL), READ RECORD via the AFL, GET
+  DATA (ATC, last online ATC), and GENERATE AC (ARQC), with correct `9000 / 6A82 / 6A86 / 6700
+  / 6985 / 6A83 / 6A88` status words. Three profiles: contact chip, contactless, and an
+  offline-decline (returns an AAC). The card builds real TLV with the production writer, so an
+  in-process transaction exercises the genuine message flow.
+- **Card-reader adapters** — `PcscCardReader` is **direct `winscard.dll` P/Invoke** (no wrapper),
+  the real Windows production path (excluded from Linux CI); `InProcCardReader` calls straight
+  into the virtual card and is what CI runs the whole flow against. (A third `vsmartcard` adapter
+  is backlogged — see ADR 0008.)
+- **Terminal kernel** (`OpenForecourt.Emv/Terminal`) — the EMV online subset as an explicit state
+  machine: candidate list, application selection, GPO, read application data, processing
+  restrictions (expiry, effective date, AUC), terminal risk management (floor limit, random
+  selection), cardholder verification (online PIN / signature / no CVM from the CVM list),
+  terminal action analysis against the action codes, first GENERATE AC requesting an ARQC, and
+  assembly of **ISO 8583 field 55**. Every card exchange is recorded for the trace.
+- Tests: golden BER-TLV round trip, malformed/fuzz cases, card-level status-word behaviour, a
+  full **golden APDU trace** of an in-process transaction, terminal branch tests (below/above
+  floor limit, expired card, each CVM path, offline decline), field-55 content, and PAN masking
+  in the decoded trace. PC/SC adapter tests are Windows-only and excluded from CI.
+
+Run the demo (a full transaction against each of the three cards, printing the complete APDU
+trace decoded by tag name and the assembled field 55):
+
+```bash
+./scripts/demo-02.sh          # Linux/macOS
+pwsh ./scripts/demo-02.ps1    # Windows
+```
+
+ADRs: [0006 BER-TLV codec](docs/adr/0006-ber-tlv-codec.md),
+[0007 data-driven virtual card](docs/adr/0007-virtual-card-data-driven-profiles.md),
+[0008 direct winscard P/Invoke](docs/adr/0008-direct-winscard-pinvoke.md),
+[0009 EMV terminal state machine](docs/adr/0009-emv-terminal-state-machine.md).
+Walkthrough: [02 — Card layer](docs/walkthroughs/02-card-layer.md).

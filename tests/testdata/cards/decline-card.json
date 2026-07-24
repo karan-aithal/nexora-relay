@@ -1,0 +1,44 @@
+{
+  "name": "Offline-decline card (returns AAC, signature CVM)",
+  "kind": "Contact",
+  "supportsPse": false,
+  "supportsPpse": true,
+  "applications": [
+    {
+      "aid": "A0000000039871",
+      "label": "OFC DECLINE",
+      "priority": 1,
+      "aip": "1800",
+      "afl": "08010100",
+      "pdol": [
+        { "tag": "9F02", "length": 6 },
+        { "tag": "9F37", "length": 4 }
+      ],
+      "records": {
+        "1:1": {
+          "5A": "4000000000000002",
+          "57": "4000000000000002D30122010000000000",
+          "5F24": "301231",
+          "5F20": "4F464320544553542043415244",
+          "5F34": "00",
+          "8C": "9F02069F03069F1A0295055F2A029A039C019F3704",
+          "8E": "00000000000000005E001F00",
+          "9F07": "FF00",
+          "9F0D": "0000000000",
+          "9F0E": "0000000000",
+          "9F0F": "F0FFFFFFFF"
+        }
+      },
+      "getData": {
+        "9F36": "0000",
+        "9F13": "0000"
+      },
+      "generateAc": {
+        "cid": "00",
+        "cryptogram": "DEADBEEFDEADBEEF",
+        "iad": "06010A03A00000",
+        "atc": "0005"
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Contact Visa credit (PSE directory)",
+  "kind": "Contact",
+  "supportsPse": true,
+  "supportsPpse": false,
+  "pseDirectorySfi": 1,
+  "applications": [
+    {
+      "aid": "A0000000031010",
+      "label": "OFC CREDIT",
+      "priority": 1,
+      "aip": "1800",
+      "afl": "10010100",
+      "pdol": [
+        { "tag": "9F66", "length": 4 },
+        { "tag": "9F02", "length": 6 },
+        { "tag": "9F37", "length": 4 }
+      ],
+      "records": {
+        "2:1": {
+          "5A": "4111111111111111",
+          "57": "4111111111111111D30122010000000000",
+          "5F24": "301231",
+          "5F25": "230101",
+          "5F20": "4F464320544553542043415244",
+          "5F34": "00",
+          "8C": "9F02069F03069F1A0295055F2A029A039C019F3704",
+          "8E": "000000000000000042005E001F00",
+          "9F07": "FF00",
+          "9F0D": "0000000000",
+          "9F0E": "0000000000",
+          "9F0F": "F0FFFFFFFF"
+        }
+      },
+      "getData": {
+        "9F36": "0000",
+        "9F13": "0000"
+      },
+      "generateAc": {
+        "cid": "80",
+        "cryptogram": "A1B2C3D4E5F60718",
+        "iad": "06010A03A00000",
+        "atc": "0000"
+      }
+    }
+  ]
+}

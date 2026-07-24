@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+    <ProjectReference Include="../OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj" />
   </ItemGroup>
 
 </Project>

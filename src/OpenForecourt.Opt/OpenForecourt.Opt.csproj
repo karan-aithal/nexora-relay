@@ -1,3 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Emv/OpenForecourt.Emv.csproj" />
+    <ProjectReference Include="../OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
+  </ItemGroup>
+
 </Project>

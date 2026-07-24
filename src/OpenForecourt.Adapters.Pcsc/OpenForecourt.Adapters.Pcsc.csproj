@@ -3,6 +3,14 @@
   <PropertyGroup>
     <!-- Windows-only adapter (winscard.dll / serial). Excluded from the Linux CI solution filter. -->
     <TargetFramework>net10.0-windows</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- winscard interop marshals structs with fixed-size ATR buffers and reader-state arrays.
+         Classic DllImport reads more clearly here than LibraryImport's custom marshallers. -->
+    <NoWarn>$(NoWarn);SYSLIB1054</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+  </ItemGroup>
 
 </Project>
