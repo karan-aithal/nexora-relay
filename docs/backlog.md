@@ -24,3 +24,19 @@ expand scope beyond the current phase file. Note the idea here and move on.").
 - **Authoritative per-counter DUKPT vectors.** Only BDK→IPEK is checked against a published
   vector; advancement/variants are round-trip-proven. If authoritative per-counter tables are
   sourced, add them as asserts (no implementation change expected). See ADR 0010.
+
+## Pump firmware and manager (Phase 4)
+
+- **Link-layer MAC on the pump link (OFP-1).** OFP-1 has integrity (CRC) but not authenticity.
+  A wire attacker on the dispenser link is out of scope this phase; add a MAC (sharing the
+  DUKPT-MAC variant noted above) if the device link is ever treated as untrusted.
+- **Command pipelining.** The manager keeps one command outstanding per pump (single-deep,
+  matching the firmware's single-SEQ idempotency cache). If per-pump command throughput ever
+  matters, widen the window and the duplicate-detection depth together.
+- **Partial-delivery commit on fault.** A fault mid-dispense does not auto-commit the partial
+  volume to the totalizer; reconciliation is left to the controller. A production meter would
+  seal partial volume at the fault.
+- **Real STM32 board bring-up.** The target build is compile-only (Cortex-M4, archived). Running
+  on hardware needs a startup/linker script, the real Cube HAL headers (the shim is
+  `SPEC-UNVERIFIED`), interrupt/DMA UART RX, pulse de-bounce and meter calibration.
+- **`VirtualPcdCardReader` over vsmartcard vpcd** — still open from Phase 2 (see above).

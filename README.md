@@ -199,3 +199,49 @@ ADRs: [0010 DUKPT verification strategy](docs/adr/0010-dukpt-tdes-verification-s
 [0011 format-preserving tokenization](docs/adr/0011-format-preserving-tokenization.md),
 [0012 key-store split](docs/adr/0012-key-store-split-dpapi-vs-inmemory.md).
 Walkthrough: [03 — Crypto and keys](docs/walkthroughs/03-crypto-keys.md).
+
+### Phase 4 — Pump controller firmware and transport adapters ✅
+
+Real embedded C firmware for the dispenser, dual-targeted so the identical source runs on a
+desktop host and would compile for an STM32, driving a state machine the C# pump manager talks to
+over three interchangeable transports. The wire protocol is specified first, in
+[docs/protocol-pump.md](docs/protocol-pump.md) (**OFP-1**, an original protocol inspired by IFSF —
+written and committed before any pump code).
+
+- **Firmware** (`firmware/pump/`) — a portable C core (`src/`) behind a six-function HAL
+  (`hal/hal.h`): CRC-16/CCITT-FALSE, a byte-stuffed frame codec with a streaming decoder, the
+  dispenser FSM as an **explicit transition table**, a non-resettable totalizer, flow-meter and
+  preset handling, watchdog and meter-stall fault latching, and idempotent duplicate detection so a
+  lost AUTHORISE ACK never double-authorises. **No dynamic allocation, no `printf`, no blocking.**
+  Two HAL builds selected by a CMake `HAL` option: `host/` (UART → TCP socket, run as a normal
+  executable) and `target/` (STM32Cube HAL, cross-compiled by CI under `arm-none-eabi-gcc`,
+  archived compile-only — the portability proof, never run here).
+- **Pump manager** (`OpenForecourt.PumpManager`) — one actor per pump (`PumpSession`) with one
+  inbound-frame channel and one outbound-command channel drained by a single loop, so **no locks**
+  guard pump state; up to 8 pumps concurrently (`PumpManagerService`). Command/response correlation
+  by sequence number with `IClock`-measured timeout and retransmit, reconnect with exponential
+  backoff + jitter, and a **mirrored C# copy of the dispenser FSM** that flags illegal transitions
+  the firmware reports as protocol violations. The OFP-1 wire codec is the C# twin of the firmware
+  codec.
+- **Transports (one `IPumpTransport` port)** — `TcpPumpTransport` (firmware host build),
+  `InProcPumpTransport` (codec-free in-memory pipe, CI), `SerialPumpTransport` (com0com null-modem,
+  Windows-only, shares the codec). Swapping one for another is configuration, not code.
+- Tests: the C tests (assert harness) cover the CRC check value, the golden AUTHORISE frame (15
+  stuffed bytes), stuffing/CRC/resync edges, and every legal + illegal FSM cell; the C# tests
+  assert the **same golden frame byte-for-byte** (cross-language parity), the FSM table matches
+  cell-for-cell, 8 concurrent pumps under load with no cross-talk and clean shutdown, and
+  deterministic timeout/retry on a self-advancing fake clock.
+
+Run the demo (build the firmware, launch four host processes, fuel two pumps concurrently with a
+live frame trace, drop a nozzle mid-dispense, and kill + restart a pump to show timeout and
+recovery):
+
+```bash
+./scripts/demo-04.sh          # Linux/macOS/WSL2
+pwsh ./scripts/demo-04.ps1    # Windows
+```
+
+ADRs: [0013 OFP-1 pump protocol](docs/adr/0013-ofp1-original-pump-protocol.md),
+[0014 dual-target firmware HAL](docs/adr/0014-dual-target-firmware-hal.md),
+[0015 pump-manager actor and transports](docs/adr/0015-pump-manager-actor-and-transports.md).
+Walkthrough: [04 — Pump firmware](docs/walkthroughs/04-pump-firmware.md).

@@ -29,3 +29,42 @@ jobs:
 
       - name: Test
         run: dotnet test OpenForecourt.CI.slnf --no-build --configuration Release --verbosity normal
+
+  firmware:
+    name: Firmware (host build, cppcheck, ARM cross-compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchains
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake cppcheck gcc-arm-none-eabi
+
+      # Host build: the portable C core against the host HAL, run as a normal executable.
+      - name: Configure host build
+        run: cmake -S firmware/pump -B firmware/pump/build-host -DHAL=host
+
+      - name: Build host (warnings are errors)
+        run: cmake --build firmware/pump/build-host
+
+      - name: Run C tests
+        run: ctest --test-dir firmware/pump/build-host --output-on-failure
+
+      # cppcheck must be clean (CLAUDE.md section 6).
+      - name: cppcheck
+        run: >
+          cppcheck --enable=warning,style,performance,portability
+          --error-exitcode=1 --inline-suppr --std=c11 --quiet
+          -Ifirmware/pump/src -Ifirmware/pump/hal
+          firmware/pump/src firmware/pump/hal/host firmware/pump/hal/target firmware/pump/test
+
+      # Target build: the IDENTICAL core compiled for a Cortex-M4 STM32. Archived
+      # compile-only (no link/flash) — this is the portability proof, never executed here.
+      - name: Configure target (cross-compile) build
+        run: >
+          cmake -S firmware/pump -B firmware/pump/build-target -DHAL=target
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/firmware/pump/cmake/arm-none-eabi.cmake"
+
+      - name: Build target (arm-none-eabi)
+        run: cmake --build firmware/pump/build-target
