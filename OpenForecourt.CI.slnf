@@ -2,23 +2,24 @@
   "solution": {
     "path": "OpenForecourt.sln",
     "projects": [
-    "src/OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj",
-    "src/OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj",
-    "src/OpenForecourt.Crypto/OpenForecourt.Crypto.csproj",
-    "src/OpenForecourt.CryptoDemo/OpenForecourt.CryptoDemo.csproj",
-    "src/OpenForecourt.Emv/OpenForecourt.Emv.csproj",
-    "src/OpenForecourt.HostSimulator/OpenForecourt.HostSimulator.csproj",
-    "src/OpenForecourt.Iso8583/OpenForecourt.Iso8583.csproj",
-    "src/OpenForecourt.Opt/OpenForecourt.Opt.csproj",
-    "src/OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj",
-    "src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj",
-    "src/OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj",
-    "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj",
-    "tests/OpenForecourt.Crypto.UnitTests/OpenForecourt.Crypto.UnitTests.csproj",
-    "tests/OpenForecourt.Iso8583.UnitTests/OpenForecourt.Iso8583.UnitTests.csproj",
-    "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj",
-    "tests/OpenForecourt.Emv.UnitTests/OpenForecourt.Emv.UnitTests.csproj",
-    "tests/OpenForecourt.PumpManager.UnitTests/OpenForecourt.PumpManager.UnitTests.csproj"
+      "src/OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj",
+      "src/OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj",
+      "src/OpenForecourt.Crypto/OpenForecourt.Crypto.csproj",
+      "src/OpenForecourt.CryptoDemo/OpenForecourt.CryptoDemo.csproj",
+      "src/OpenForecourt.PumpDemo/OpenForecourt.PumpDemo.csproj",
+      "src/OpenForecourt.Emv/OpenForecourt.Emv.csproj",
+      "src/OpenForecourt.HostSimulator/OpenForecourt.HostSimulator.csproj",
+      "src/OpenForecourt.Iso8583/OpenForecourt.Iso8583.csproj",
+      "src/OpenForecourt.Opt/OpenForecourt.Opt.csproj",
+      "src/OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj",
+      "src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj",
+      "src/OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj",
+      "tests/OpenForecourt.Abstractions.UnitTests/OpenForecourt.Abstractions.UnitTests.csproj",
+      "tests/OpenForecourt.Crypto.UnitTests/OpenForecourt.Crypto.UnitTests.csproj",
+      "tests/OpenForecourt.Iso8583.UnitTests/OpenForecourt.Iso8583.UnitTests.csproj",
+      "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj",
+      "tests/OpenForecourt.Emv.UnitTests/OpenForecourt.Emv.UnitTests.csproj",
+      "tests/OpenForecourt.PumpManager.UnitTests/OpenForecourt.PumpManager.UnitTests.csproj"
     ]
   }
 }

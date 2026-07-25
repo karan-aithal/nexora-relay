@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
+  </ItemGroup>
+
+</Project>
