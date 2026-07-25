@@ -28,3 +28,7 @@ appsettings.*.Local.json
 .idea/
 *.swp
 .DS_Store
+
+# Firmware CMake build trees
+firmware/pump/build-*/
+firmware/pump/build/

@@ -276,8 +276,10 @@ below.
 ## 7. Totalizer, flow meter, preset, watchdog
 
 - **Totalizer** — two 64-bit lifetime counters (volume mL, value minor units). They are
-  **monotonic and non-resettable**: every completed dispense's volume/value is added,
-  nothing ever subtracts. In a real dispenser this is the legally-sealed register.
+  **monotonic and non-resettable**: a completed dispense's volume/value is added at the
+  moment `DISPENSE_COMPLETE` is emitted (delivery end), nothing ever subtracts. In a real
+  dispenser this is the legally-sealed register. A fault *during* dispensing does not
+  auto-commit the partial delivery — reconciliation is left to the controller (§10).
 - **Flow meter simulation** — configurable **pulses per litre** (`PULSES_PER_LITRE`,
   default 1000, i.e. 1 pulse = 1 mL). The host HAL drives pulses on a timer to simulate
   fuel flow; each pulse batch is a `FLOW` event that accumulates `mL` and recomputes value
@@ -309,8 +311,9 @@ that happened while the link was down.
 
 ## 9. Worked example — one successful fuelling
 
-A £10-value-preset fuelling of pump, ending at the limit. Bytes shown are the **logical**
-frame (pre-stuffing); none of these particular bytes need stuffing. All hex.
+A £10-value-preset fuelling of pump, ending at the limit. Each step shows the **logical**
+frame (pre-stuffing); where the body contains a reserved byte, the **on-wire** stuffed
+form is given too. All hex.
 
 **Unit price** 150 minor units/litre (£1.50/L), value preset £10.00 = `0x000003E8`
 minor units.
@@ -322,8 +325,14 @@ Body (`SEQ CMD PAYLOAD`): `07 01 02 000003E8`
 - CRC-16/CCITT-FALSE over `07 01 02 00 00 03 E8` = `0xC0DC`. *(computed by the codec; the
   golden-frame test pins it — see §1.1 for how the algorithm itself is pinned.)*
 
-Frame: `02 0007 07 01 02 000003E8 C0DC 03`
-→ `02 00 07 07 01 02 00 00 03 E8 C0 DC 03`
+Logical frame: `02 | 0007 | 07 | 01 | 02 000003E8 | C0DC | 03`
+→ logical bytes `02 00 07 07 01 02 00 00 03 E8 C0 DC 03`.
+
+The body contains `0x02` (the preset-mode byte) and `0x03` (inside the amount `000003E8`),
+both reserved, so on the wire they are stuffed to `10 22` and `10 23` (§1.2):
+
+**On-wire (stuffed):** `02 00 07 07 01 10 22 00 00 10 23 E8 C0 DC 03` — 15 bytes. This is
+the exact byte sequence the C and C# golden-frame tests both assert.
 
 ### 9.2 Pump → manager: `ACK` of AUTHORISE, SEQ `0x07`
 Body: `07 81` — `LEN`=`0x0002`, CRC over `07 81`.
@@ -344,8 +353,11 @@ When accumulated value hits £10.00 the firmware fires `LIMIT`, clamps volume to
 It re-emits this same frame every `T_EVENT_REPEAT` until acked.
 
 ### 9.6 Manager settles online, then → pump: `CANCEL_AUTH`, SEQ `0x08`
-Body: `08 02` — the settle-ack. Pump `COMPLETE → IDLE`, lifetime totalizer += (6666 mL,
-1000 minor units). Pump ACKs `0x82` SEQ `08`. Fuelling complete.
+Body: `08 02` — the settle-ack. Pump `COMPLETE → IDLE` and resets the per-dispense
+counters. The lifetime totalizer was already sealed at `DISPENSE_COMPLETE` emission
+(§9.5) — delivered fuel is committed the instant delivery ends, not at settle-ack, so a
+lost/late settle-ack can never lose or double-count a dispense. Pump ACKs `0x82` SEQ `08`.
+Fuelling complete.
 
 ---
 
