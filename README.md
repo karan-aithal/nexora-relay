@@ -155,3 +155,47 @@ ADRs: [0006 BER-TLV codec](docs/adr/0006-ber-tlv-codec.md),
 [0008 direct winscard P/Invoke](docs/adr/0008-direct-winscard-pinvoke.md),
 [0009 EMV terminal state machine](docs/adr/0009-emv-terminal-state-machine.md).
 Walkthrough: [02 — Card layer](docs/walkthroughs/02-card-layer.md).
+
+### Phase 3 — DUKPT, PIN blocks, tokenization, threat model ✅
+
+The security substrate that makes the P2PE and PIN-security stories architecturally true, plus
+a written threat model. All of it against test keys and test PANs only (CLAUDE.md §7).
+
+- **DUKPT, TDES** (`OpenForecourt.Crypto/Dukpt`) — ANSI X9.24-1: BDK→IPEK derivation, the `Ksn`
+  value type (initial key serial number + 21-bit counter, advancing and refusing past
+  exhaustion), the non-reversible future-key derivation, and per-transaction PIN and data key
+  variants. The BDK→IPEK step is asserted against the **published X9.24 vector**
+  (`FFFF9876543210E00000` → `6AC292FAA1315B4D858AB3A3D7D5933A`); advancement and variants are
+  proven by round-trip (terminal derives from the IPEK and encrypts; host re-derives from the BDK
+  and decrypts to the same plaintext). Genuinely unsourced details carry `SPEC-UNVERIFIED`
+  (CLAUDE.md §11).
+- **PIN blocks** (`OpenForecourt.Crypto/Pin`) — ISO 9564 Format 0 (PAN-XOR, TDES) and Format 4
+  (AES), encode/encrypt/decrypt round-tripped, with the Format 0 clear block pinned to a known
+  vector. PINs and PIN blocks are never logged at any level, enforced by the PAN-scan test.
+- **Tokenization** (`OpenForecourt.Crypto/Tokenization`) — `FpeTokenVault`, the `ITokenVault` at
+  the OPT boundary: a deterministic, format-preserving, Luhn-valid surrogate that preserves the
+  last four and reveals nothing (HMAC-derived middle, adjust one digit for Luhn). Nothing
+  downstream of the OPT ever holds a cleartext PAN; a test walks every artefact and sink to prove
+  it.
+- **Key store** (`OpenForecourt.Crypto/KeyStore`) — `DpapiKeyStore` (Windows DPAPI at-rest,
+  `[SupportedOSPlatform("windows")]`, excluded from Linux CI) and `InMemoryKeyStore` (tests only,
+  **throws at construction in a Release build**).
+- **Threat model** ([docs/threat-model.md](docs/threat-model.md)) — STRIDE over the four trust
+  boundaries, the Secure Cryptographic Device boundary, the key-management lifecycle, a PCI DSS
+  scope map, and an honest "what this simulation does not prove".
+- Tests: DUKPT IPEK vector + counter advances + terminal/host round trip, PIN block round trip
+  (both formats), token determinism/Luhn/irreversibility, the log-and-storage PAN scan, and the
+  Release key-store guard.
+
+Run the demo (derive the IPEK, advance the KSN across three transactions with a different derived
+key each, encrypt and decrypt a PIN block, and print a record with the token in place of the PAN):
+
+```bash
+./scripts/demo-03.sh          # Linux/macOS
+pwsh ./scripts/demo-03.ps1    # Windows
+```
+
+ADRs: [0010 DUKPT verification strategy](docs/adr/0010-dukpt-tdes-verification-strategy.md),
+[0011 format-preserving tokenization](docs/adr/0011-format-preserving-tokenization.md),
+[0012 key-store split](docs/adr/0012-key-store-split-dpapi-vs-inmemory.md).
+Walkthrough: [03 — Crypto and keys](docs/walkthroughs/03-crypto-keys.md).
