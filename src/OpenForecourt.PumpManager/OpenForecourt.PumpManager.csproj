@@ -1,3 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <!-- Cross-platform: the pump manager, the OFP-1 wire codec, the mirrored dispenser FSM,
+         and the TCP transport to the firmware host build. The Windows-only serial transport
+         lives in Adapters.Serial and references this project for the codec. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

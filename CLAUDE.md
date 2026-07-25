@@ -268,3 +268,6 @@ begin the next phase in the same session.
 - Never claim a test passes without running it.
 - Never use real cardholder data or real cryptographic keys.
 - Never skip the walkthrough document.
+
+## Commit conventions
+Never add "Co-Authored-By" lines to commits.

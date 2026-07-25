@@ -3,6 +3,17 @@
   <PropertyGroup>
     <!-- Windows-only adapter (winscard.dll / serial). Excluded from the Linux CI solution filter. -->
     <TargetFramework>net10.0-windows</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SerialPort over a com0com virtual null-modem pair. -->
+    <PackageReference Include="System.IO.Ports" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The OFP-1 wire codec is shared with the TCP transport in PumpManager. -->
+    <ProjectReference Include="../OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj" />
+  </ItemGroup>
 
 </Project>
