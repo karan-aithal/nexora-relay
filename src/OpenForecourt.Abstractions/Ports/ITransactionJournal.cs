@@ -34,4 +34,13 @@ public interface ITransactionJournal
     /// </summary>
     /// <param name="cancellationToken">Cancels the read.</param>
     Task<IReadOnlyList<TransactionContext>> ReadIncompleteAsync(CancellationToken cancellationToken);
+
+    /// <summary>Returns the latest recorded state of every transaction, newest first.</summary>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<IReadOnlyList<TransactionContext>> ReadAllAsync(CancellationToken cancellationToken);
+
+    /// <summary>Returns the latest recorded state of one transaction, or null if unknown.</summary>
+    /// <param name="transactionId">The transaction to look up.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<TransactionContext?> TryGetAsync(Guid transactionId, CancellationToken cancellationToken);
 }

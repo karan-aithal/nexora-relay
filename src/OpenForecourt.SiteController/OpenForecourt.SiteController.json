@@ -1,0 +1,486 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "OpenForecourt.SiteController | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/pumps": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Lists every pump and its live state.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PumpSnapshot"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pumps/{id}": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Returns one pump's state.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpSnapshot"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pumps/{id}/authorise": {
+      "post": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Authorises fuel on a pump. Requires an Idempotency-Key header.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthoriseBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorisationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pumps/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Cancels an in-progress authorisation on a pump before dispensing.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/transactions": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Lists transactions, newest first.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/{id}": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Returns one transaction.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/totals": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "Returns site transaction totals.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalsView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthorisationDecision": {
+        "enum": [
+          "Approved",
+          "ApprovedOffline",
+          "Declined",
+          "Reversed"
+        ],
+        "description": "The decision an authorisation attempt reached."
+      },
+      "AuthorisationResult": {
+        "required": [
+          "transactionId",
+          "decision",
+          "authorisationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "The transaction that was opened.",
+            "format": "uuid"
+          },
+          "decision": {
+            "description": "What was decided.",
+            "$ref": "#/components/schemas/AuthorisationDecision"
+          },
+          "authorisationCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The authorisation code when approved; otherwise null."
+          }
+        },
+        "description": "The outcome of an authorisation request."
+      },
+      "AuthoriseBody": {
+        "required": [
+          "amountMinor",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "amountMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Amount to authorise, in minor units.",
+            "format": "int64"
+          },
+          "token": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The card token; never a PAN."
+          }
+        },
+        "description": "The request body for an authorisation."
+      },
+      "PumpSnapshot": {
+        "type": "object",
+        "properties": {
+          "pumpId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The pump number.",
+            "format": "int32"
+          },
+          "state": {
+            "description": "Its current lifecycle state.",
+            "$ref": "#/components/schemas/PumpState"
+          },
+          "transactionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The transaction in progress, if any.",
+            "format": "uuid"
+          },
+          "authorisedMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The authorised amount in minor units, if any.",
+            "format": "int64"
+          },
+          "dispensedMillilitres": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "How much has been dispensed so far.",
+            "format": "int32"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency of AuthorisedMinor."
+          }
+        },
+        "description": "A point-in-time view of one pump, as broadcast to dashboards."
+      },
+      "PumpState": {
+        "enum": [
+          "Idle",
+          "Authorising",
+          "Authorised",
+          "NozzleLifted",
+          "Dispensing",
+          "DispenseComplete",
+          "Settling",
+          "Error",
+          "OutOfService"
+        ],
+        "description": "The lifecycle state of a single fuel pump within a fuelling session."
+      },
+      "TotalsView": {
+        "required": [
+          "currency",
+          "completed",
+          "declined",
+          "reversed",
+          "offlinePending",
+          "completedValueMinor",
+          "offlineExposureMinor"
+        ],
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "Currency of the totals."
+          },
+          "completed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of settled transactions.",
+            "format": "int32"
+          },
+          "declined": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of declined transactions.",
+            "format": "int32"
+          },
+          "reversed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of reversed transactions.",
+            "format": "int32"
+          },
+          "offlinePending": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Count of offline authorisations awaiting replay.",
+            "format": "int32"
+          },
+          "completedValueMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Sum of settled amounts, in minor units.",
+            "format": "int64"
+          },
+          "offlineExposureMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Current offline exposure, in minor units.",
+            "format": "int64"
+          }
+        },
+        "description": "Totals across the journal."
+      },
+      "TransactionView": {
+        "required": [
+          "transactionId",
+          "pumpId",
+          "status",
+          "state",
+          "amountMinor",
+          "currency",
+          "authorisationCode",
+          "offline",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "The transaction id.",
+            "format": "uuid"
+          },
+          "pumpId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The pump.",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "description": "The recovery lifecycle status."
+          },
+          "state": {
+            "type": "string",
+            "description": "The pump-facing state."
+          },
+          "amountMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Amount in minor units.",
+            "format": "int64"
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency."
+          },
+          "authorisationCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Authorisation code when approved."
+          },
+          "offline": {
+            "type": "boolean",
+            "description": "Whether it was authorised offline."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When it opened.",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "When it last changed.",
+            "format": "date-time"
+          }
+        },
+        "description": "The REST/SignalR view of one transaction. Carries a token reference, never a PAN."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Forecourt"
+    }
+  ]
+}

@@ -32,3 +32,8 @@ appsettings.*.Local.json
 # Firmware CMake build trees
 firmware/pump/build-*/
 firmware/pump/build/
+
+# SQLite journal runtime files (site controller)
+*.db
+*.db-wal
+*.db-shm

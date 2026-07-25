@@ -1,3 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- The orchestration tier: versioned REST API, SignalR hub, RabbitMQ dispatch, and the
+         crash-safe SQLite journal. This is the "failure paths" component (Phase 5). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <UserSecretsId>openforecourt-sitecontroller</UserSecretsId>
+    <!-- Emit the OpenAPI document at build time into the project root so it is committed. -->
+    <OpenApiGenerateDocumentsOnBuild>true</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiDocumentsDirectory>.</OpenApiDocumentsDirectory>
+    <!-- CA1848 (source-generated LoggerMessage delegates) and CA1873 (guard expensive log
+         args) are hot-path logging micro-optimisations. This orchestration tier logs at human
+         rates, not per-frame, so the template style stays readable; the perf rules do not earn
+         their boilerplate here. -->
+    <NoWarn>$(NoWarn);CA1848;CA1873</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <!-- Pin above the transitive Microsoft.OpenApi 2.0.0, which carries advisory
+         GHSA-v5pm-xwqc-g5wc; 2.11.0 is the patched release on the same major. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+    <ProjectReference Include="../OpenForecourt.Iso8583/OpenForecourt.Iso8583.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.Sqlite/OpenForecourt.Adapters.Sqlite.csproj" />
+    <ProjectReference Include="../OpenForecourt.Adapters.RabbitMq/OpenForecourt.Adapters.RabbitMq.csproj" />
+  </ItemGroup>
 
 </Project>

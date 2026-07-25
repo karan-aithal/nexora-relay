@@ -1,0 +1,47 @@
+# One `docker compose up` brings up the forecourt orchestration tier (CLAUDE.md Phase 5):
+# RabbitMQ, the acquiring host simulator, and the site controller wired to both.
+#
+# Scope note: this is the "ports-centric" slice. The site controller drives pump state
+# in-process; the pump firmware host build has its own tooling (Phase 4, scripts/demo-04)
+# and is not on the orchestration path exercised here. See docs/adr/0018.
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  host-simulator:
+    build:
+      context: ..
+      dockerfile: src/OpenForecourt.HostSimulator/Dockerfile
+    ports:
+      - "9583:9583"
+
+  site-controller:
+    build:
+      context: ..
+      dockerfile: src/OpenForecourt.SiteController/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      host-simulator:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      Site__HostEndpoint: "host-simulator:9583"
+      Site__RabbitMqUri: "amqp://guest:guest@rabbitmq:5672"
+      Site__JournalPath: "/data/forecourt-journal.db"
+      Site__HostProbeInterval: "00:00:02"
+    volumes:
+      - journal:/data
+
+volumes:
+  journal:

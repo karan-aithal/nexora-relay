@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Crash-safe transaction journal on SQLite in WAL mode (CLAUDE.md section 5): survives
+         power loss mid-transaction and replays incomplete transactions on restart. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Microsoft.Data.Sqlite: the ADO.NET provider maintained alongside EF Core; brings the
+         bundled SQLite native library so WAL works cross-platform with no external install. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+    <!-- Pin the native SQLite bundle above the transitive 2.1.11, which carries advisory
+         GHSA-2m69-gcr7-jv3q; 2.1.12 is the patched release on the same major. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

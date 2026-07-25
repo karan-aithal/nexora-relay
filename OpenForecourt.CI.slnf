@@ -4,6 +4,8 @@
     "projects": [
       "src/OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj",
       "src/OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj",
+      "src/OpenForecourt.Adapters.Sqlite/OpenForecourt.Adapters.Sqlite.csproj",
+      "src/OpenForecourt.Adapters.RabbitMq/OpenForecourt.Adapters.RabbitMq.csproj",
       "src/OpenForecourt.Crypto/OpenForecourt.Crypto.csproj",
       "src/OpenForecourt.CryptoDemo/OpenForecourt.CryptoDemo.csproj",
       "src/OpenForecourt.PumpDemo/OpenForecourt.PumpDemo.csproj",
@@ -19,7 +21,8 @@
       "tests/OpenForecourt.Iso8583.UnitTests/OpenForecourt.Iso8583.UnitTests.csproj",
       "tests/OpenForecourt.HostSimulator.UnitTests/OpenForecourt.HostSimulator.UnitTests.csproj",
       "tests/OpenForecourt.Emv.UnitTests/OpenForecourt.Emv.UnitTests.csproj",
-      "tests/OpenForecourt.PumpManager.UnitTests/OpenForecourt.PumpManager.UnitTests.csproj"
+      "tests/OpenForecourt.PumpManager.UnitTests/OpenForecourt.PumpManager.UnitTests.csproj",
+      "tests/OpenForecourt.SiteController.UnitTests/OpenForecourt.SiteController.UnitTests.csproj"
     ]
   }
 }

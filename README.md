@@ -245,3 +245,48 @@ ADRs: [0013 OFP-1 pump protocol](docs/adr/0013-ofp1-original-pump-protocol.md),
 [0014 dual-target firmware HAL](docs/adr/0014-dual-target-firmware-hal.md),
 [0015 pump-manager actor and transports](docs/adr/0015-pump-manager-actor-and-transports.md).
 Walkthrough: [04 — Pump firmware](docs/walkthroughs/04-pump-firmware.md).
+
+### Phase 5 — Site controller: REST, SignalR, RabbitMQ, crash-safe journal ✅
+
+The orchestration tier, and the phase that is really about **failure paths**. `OpenForecourt.SiteController`
+is an ASP.NET Core host that ties the ports together: a crash-safe SQLite journal, a TCP link to the
+acquiring host, RabbitMQ store-and-forward, a SignalR feed, and offline authorisation that keeps the
+forecourt selling fuel when the host is unreachable.
+
+- **Crash-safe journal (`SqliteJournal`, WAL).** The intent is journalled **before** the host request
+  is sent, and every lifecycle step (`Intent → HostRequestSent → Approved → Completed`, with
+  `Declined`/`Reversed`/`Voided` branches) is durable before its side effect. On startup,
+  `RecoveryService` reconciles every in-flight transaction: void an intent that never reached the
+  host, **reverse** a request whose host state is unknown, resume settlement, or re-queue an offline
+  approval. A test kills (simulates) the process at each of five defined points and asserts recovery.
+- **Offline mode.** When `HostProber` marks the host down, authorisations under a configurable **floor
+  limit** are approved offline within a total **exposure ceiling** (`OfflinePolicy`) and queued durably
+  on the journal. On reconnection they **replay in order, exactly once** (the host dedupes on
+  transaction id and each record is driven terminal); a declined replay generates a reversal/exception.
+- **Dispatch (`ITransactionDispatch`).** `RabbitMqDispatch` — durable `settlement` queue + durable
+  `settlement.dlq` dead-letter queue, persistent messages, redelivery-then-dead-letter — with an
+  `InProcDispatch` twin for CI. The `SettlementConsumer` is **idempotent by transaction id**.
+- **REST API** (`/api/v1/…`: pumps, authorise, cancel, transactions, totals, health) with RFC 7807
+  problem details, **idempotency keys** on state-changing endpoints, a committed OpenAPI document, a
+  correlation id flowing OPT→host, OpenTelemetry traces, and **Serilog PAN masking enforced at the
+  sink** so no log call can leak a PAN.
+- **SignalR hub** with **per-connection drop-oldest backpressure** (`PerConnectionDispatcher`) so a
+  slow dashboard never stalls the pump pipeline, and snapshot-based resynchronisation on reconnect.
+- **Ports as adapters:** `SqliteJournal`/`InMemoryJournal`, `RabbitMqDispatch`/`InProcDispatch`,
+  `TcpHostConnection`/`InProcHostConnection` — CI runs the full failure-path suite on Linux with no
+  broker and no host; the demo runs the real thing under Docker Compose.
+
+Run the demo (`docker compose up` the forecourt, authorise four pumps, kill the host and watch
+offline authorisation continue, restart the site controller and watch recovery, restore the host and
+watch replay + reconciliation):
+
+```bash
+./scripts/demo-05.sh          # Linux/macOS/WSL2 (Docker required)
+pwsh ./scripts/demo-05.ps1    # Windows
+```
+
+ADRs: [0016 write-intent-before-send recovery](docs/adr/0016-write-intent-before-send-recovery.md),
+[0017 dispatch port over RabbitMQ](docs/adr/0017-transaction-dispatch-port-rabbitmq.md),
+[0018 offline authorisation & orchestration scope](docs/adr/0018-offline-authorisation-and-orchestration-scope.md),
+[0019 SignalR backpressure & PAN masking](docs/adr/0019-signalr-per-connection-backpressure.md).
+Walkthrough: [05 — Site controller](docs/walkthroughs/05-site-controller.md).

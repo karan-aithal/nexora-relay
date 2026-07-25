@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- RabbitMQ store-and-forward dispatch: durable queue + durable dead-letter queue
+         (CLAUDE.md section 5, "RabbitMQ for transaction dispatch and store-and-forward"). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- RabbitMQ.Client 7.x: the fully-async client matching the project's no-blocking rule. -->
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../OpenForecourt.Abstractions/OpenForecourt.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

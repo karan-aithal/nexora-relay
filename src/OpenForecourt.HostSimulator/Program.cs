@@ -19,7 +19,8 @@ Console.CancelKeyPress += (_, e) =>
 switch (command)
 {
     case "serve":
-        await ServeAsync(new IPEndPoint(IPAddress.Loopback, port), rules, stopping.Token);
+        // Bind all interfaces so the host is reachable from other containers, not just loopback.
+        await ServeAsync(new IPEndPoint(IPAddress.Any, port), rules, stopping.Token);
         return 0;
 
     case "demo":
