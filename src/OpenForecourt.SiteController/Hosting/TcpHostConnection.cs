@@ -6,6 +6,7 @@ using OpenForecourt.Abstractions.Domain;
 using OpenForecourt.Abstractions.Ports;
 using OpenForecourt.Iso8583;
 using OpenForecourt.SiteController.Config;
+using OpenForecourt.SiteController.Tracing;
 
 namespace OpenForecourt.SiteController.Hosting;
 
@@ -29,8 +30,22 @@ namespace OpenForecourt.SiteController.Hosting;
 /// (in offline mode) even when the host is down or its DNS name does not yet resolve — which
 /// is exactly the state a restart-during-outage lands in.
 /// </para>
+/// <para>
+/// Two seams exist for the dashboard (Phase 6). <c>trace</c> receives the encoded request and the
+/// decoded response field by field, so the detail drawer shows the real message rather than a
+/// reconstruction. <c>panSelector</c> chooses the PAN placed on field 2, which is how the fault
+/// console forces a specific acquirer response: the host simulator's rules are PAN-keyed, so the
+/// decline comes back from the host itself.
+/// </para>
 /// </remarks>
-public sealed class TcpHostConnection(string host, int port, IClock clock, SiteOptions options, ILogger<TcpHostConnection> logger)
+public sealed class TcpHostConnection(
+    string host,
+    int port,
+    IClock clock,
+    SiteOptions options,
+    ILogger<TcpHostConnection> logger,
+    ITraceSink? trace = null,
+    Func<string>? panSelector = null)
     : IHostConnection, IHostProbe, IAsyncDisposable
 {
     private readonly Iso8583Codec _codec = new();
@@ -48,7 +63,10 @@ public sealed class TcpHostConnection(string host, int port, IClock clock, SiteO
         {
             await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
             var message = BuildFinancial(request);
-            await Iso8583Framing.WriteFrameAsync(_writer!, _codec.Encode(message), cancellationToken).ConfigureAwait(false);
+            var encoded = _codec.Encode(message);
+            var sentAt = clock.UtcNow;
+            Record(request.TransactionId, sentAt, TimeSpan.Zero, $"→ {Iso8583Trace.Label(message)}", encoded, message);
+            await Iso8583Framing.WriteFrameAsync(_writer!, encoded, cancellationToken).ConfigureAwait(false);
 
             var readTask = _reader!.ReadFrameAsync(cancellationToken).AsTask();
             var timeout = clock.Delay(options.HostTimeout, cancellationToken);
@@ -73,6 +91,8 @@ public sealed class TcpHostConnection(string host, int port, IClock clock, SiteO
             }
 
             var response = decoded.Value;
+            Record(request.TransactionId, sentAt, clock.UtcNow - sentAt, $"← {Iso8583Trace.Label(response)}",
+                frame.Body.Span.ToArray(), response);
             string? code = response[Fields.ResponseCode];
             return code == "00"
                 ? new HostResponse(AuthorisationOutcome.Approved, response[Fields.AuthorisationCode] ?? "000000")
@@ -136,12 +156,16 @@ public sealed class TcpHostConnection(string host, int port, IClock clock, SiteO
         _writer = null;
     }
 
+    private void Record(Guid transactionId, DateTimeOffset at, TimeSpan duration, string label, byte[] wire, Iso8583Message message) =>
+        trace?.TraceFor(transactionId).Add(
+            at, duration, "iso8583", label, Convert.ToHexString(wire), Iso8583Trace.Describe(message));
+
     private Iso8583Message BuildFinancial(FinancialRequest request)
     {
         var now = clock.UtcNow;
         string stan = (Interlocked.Increment(ref _stan) % 1_000_000).ToString("D6", CultureInfo.InvariantCulture);
         return Iso8583Message.Create("0200")
-            .Set(Fields.Pan, options.TestPan)
+            .Set(Fields.Pan, panSelector?.Invoke() ?? options.TestPan)
             .Set(Fields.ProcessingCode, "000000")
             .Set(Fields.Amount, request.Amount.Minor)
             .Set(Fields.TransmissionDateTime, now.ToString("MMddHHmmss", CultureInfo.InvariantCulture))

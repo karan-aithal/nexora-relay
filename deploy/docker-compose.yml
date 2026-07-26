@@ -1,9 +1,9 @@
-# One `docker compose up` brings up the forecourt orchestration tier (CLAUDE.md Phase 5):
-# RabbitMQ, the acquiring host simulator, and the site controller wired to both.
+# One `docker compose up` brings up the whole forecourt: RabbitMQ, the acquiring host
+# simulator, and the site controller — which now also serves the Angular operator console,
+# runs the outdoor payment terminal in-process, and launches one pump-firmware process per
+# dispenser (Phase 6, superseding the Phase 5 scope note in docs/adr/0018).
 #
-# Scope note: this is the "ports-centric" slice. The site controller drives pump state
-# in-process; the pump firmware host build has its own tooling (Phase 4, scripts/demo-04)
-# and is not on the orchestration path exercised here. See docs/adr/0018.
+# The browser is the demo: http://localhost:8080
 services:
   rabbitmq:
     image: rabbitmq:4-management
@@ -40,6 +40,12 @@ services:
       Site__RabbitMqUri: "amqp://guest:guest@rabbitmq:5672"
       Site__JournalPath: "/data/forecourt-journal.db"
       Site__HostProbeInterval: "00:00:02"
+      Site__PumpCount: "8"
+      # The firmware host build, the card profiles and the test BDK are copied into the image
+      # by src/OpenForecourt.SiteController/Dockerfile. Test data only (CLAUDE.md section 7).
+      Site__PumpFirmwarePath: "/app/firmware/pump_host"
+      Site__CardProfilesPath: "/app/cards"
+      Site__PinBdkPath: "/app/keys/bdk.hex"
     volumes:
       - journal:/data
 

@@ -1,0 +1,21 @@
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.2rem;
+  padding: 0.35rem 0.7rem;
+  border-bottom: 1px solid var(--edge-strong);
+  background: var(--panel);
+}
+
+.stat { display: flex; align-items: baseline; gap: 0.35rem; font-size: 0.72rem; }
+.label { color: var(--muted); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.value { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.stat--warn .value { color: var(--amber); }
+.stat--end { margin-left: auto; }
+.stat--end[data-eod='true'] .value { color: var(--green); }
+.stat--end[data-eod='false'] .value { color: var(--amber); }
+
+.stat--link[data-link='connected'] .value { color: var(--green); }
+.stat--link[data-link='reconnecting'] .value { color: var(--amber); }
+.stat--link[data-link='disconnected'] .value { color: var(--red); }

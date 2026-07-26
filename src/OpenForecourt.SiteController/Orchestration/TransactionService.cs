@@ -155,6 +155,36 @@ public sealed class TransactionService(
         }
     }
 
+    /// <summary>
+    /// Settles a pre-authorised transaction for the volume actually delivered, once the dispenser
+    /// reports the fuelling complete.
+    /// </summary>
+    /// <remarks>
+    /// The delivered value can only ever be <i>less</i> than what was authorised — the preset is
+    /// what stops the pump — so a delivered amount above the authorisation is treated as a metering
+    /// anomaly and the authorised amount is settled instead rather than over-charging the customer.
+    /// Anything not left in <see cref="TransactionStatus.Approved"/> is ignored, which makes a
+    /// repeated DISPENSE_COMPLETE (the firmware re-emits until acked) harmless.
+    /// </remarks>
+    public async Task CompleteFuellingAsync(Guid transactionId, Money delivered, CancellationToken cancellationToken)
+    {
+        var tx = await journal.TryGetAsync(transactionId, cancellationToken).ConfigureAwait(false);
+        if (tx is null || tx.Status != TransactionStatus.Approved || tx.Offline)
+        {
+            return;
+        }
+
+        var settled = delivered.Minor > 0 && delivered.Minor <= tx.Amount.Minor ? delivered : tx.Amount;
+        if (settled.Minor != delivered.Minor)
+        {
+            logger.LogWarning(
+                "Pump {PumpId} reported {Delivered} against an authorisation of {Authorised}; settling the authorised amount.",
+                tx.PumpId, delivered.Minor, tx.Amount.Minor);
+        }
+
+        await SettleAsync(tx with { Amount = settled, UpdatedAt = clock.UtcNow }, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<AuthorisationResult> AuthoriseOfflineAsync(TransactionContext tx, CancellationToken cancellationToken)
     {
         if (tx.Amount.Minor <= options.FloorLimitMinor && offlinePolicy.TryReserve(tx.Amount.Minor))
@@ -186,6 +216,14 @@ public sealed class TransactionService(
         {
             // Host is down: the transaction is queued (as Approved+Offline) for later replay.
             return new AuthorisationResult(tx.TransactionId, AuthorisationDecision.ApprovedOffline, authorisationCode);
+        }
+
+        if (options.SettleOnDispenseComplete)
+        {
+            // A real forecourt pre-authorises, then settles what was actually delivered. The
+            // transaction stays Approved until the dispenser reports DISPENSE_COMPLETE; if the
+            // process dies in that window, recovery finds it in Approved and resumes settlement.
+            return new AuthorisationResult(tx.TransactionId, AuthorisationDecision.Approved, authorisationCode);
         }
 
         await SettleAsync(tx, cancellationToken).ConfigureAwait(false);

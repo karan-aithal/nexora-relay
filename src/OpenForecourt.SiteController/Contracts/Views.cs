@@ -35,7 +35,36 @@ public sealed record TransactionView(
 /// <summary>The full site snapshot a reconnecting dashboard resynchronises against.</summary>
 /// <param name="Pumps">Every pump's live state.</param>
 /// <param name="RecentTransactions">The most recent transactions.</param>
-public sealed record SiteSnapshot(IReadOnlyList<PumpSnapshot> Pumps, IReadOnlyList<TransactionView> RecentTransactions);
+/// <param name="Terminals">Every outdoor payment terminal's screen state.</param>
+/// <param name="Faults">The currently armed fault set.</param>
+/// <param name="Totals">Site totals at the moment of the snapshot.</param>
+public sealed record SiteSnapshot(
+    IReadOnlyList<PumpSnapshot> Pumps,
+    IReadOnlyList<TransactionView> RecentTransactions,
+    IReadOnlyList<Opt.OptView> Terminals,
+    Faults.FaultState Faults,
+    TotalsView Totals);
+
+/// <summary>One fuel grade as the dashboard shows it.</summary>
+/// <param name="Code">Grade code.</param>
+/// <param name="Name">Display name.</param>
+/// <param name="PricePerLitreMinor">Unit price in minor units per litre.</param>
+public sealed record GradeView(string Code, string Name, int PricePerLitreMinor);
+
+/// <summary>Static site configuration the dashboard reads once at start-up.</summary>
+/// <param name="Currency">ISO 4217 currency for every amount on the site.</param>
+/// <param name="PumpCount">How many pumps the grid should render.</param>
+/// <param name="FloorLimitMinor">Per-transaction offline floor limit.</param>
+/// <param name="FirmwarePumps">True when the pumps are real firmware processes, not journal-driven state.</param>
+/// <param name="Grades">The grades on sale.</param>
+/// <param name="Cards">The test cards the card simulator can present.</param>
+public sealed record SiteInfoView(
+    string Currency,
+    int PumpCount,
+    long FloorLimitMinor,
+    bool FirmwarePumps,
+    IReadOnlyList<GradeView> Grades,
+    IReadOnlyList<Opt.CardProfileView> Cards);
 
 /// <summary>Totals across the journal.</summary>
 /// <param name="Currency">Currency of the totals.</param>
@@ -47,4 +76,22 @@ public sealed record SiteSnapshot(IReadOnlyList<PumpSnapshot> Pumps, IReadOnlyLi
 /// <param name="OfflineExposureMinor">Current offline exposure, in minor units.</param>
 public sealed record TotalsView(
     string Currency, int Completed, int Declined, int Reversed, int OfflinePending,
-    long CompletedValueMinor, long OfflineExposureMinor);
+    long CompletedValueMinor, long OfflineExposureMinor)
+{
+    /// <summary>Rolls a journal read up into site totals.</summary>
+    /// <param name="all">Every journal record.</param>
+    /// <param name="offlineExposureMinor">Current unreplayed offline exposure.</param>
+    /// <param name="currency">Site currency.</param>
+    public static TotalsView From(IReadOnlyList<TransactionContext> all, long offlineExposureMinor, string currency)
+    {
+        ArgumentNullException.ThrowIfNull(all);
+        return new TotalsView(
+            Currency: currency,
+            Completed: all.Count(t => t.Status == TransactionStatus.Completed),
+            Declined: all.Count(t => t.Status == TransactionStatus.Declined),
+            Reversed: all.Count(t => t.Status == TransactionStatus.Reversed),
+            OfflinePending: all.Count(t => t.Offline && t.Status == TransactionStatus.Approved),
+            CompletedValueMinor: all.Where(t => t.Status == TransactionStatus.Completed).Sum(t => t.Amount.Minor),
+            OfflineExposureMinor: offlineExposureMinor);
+    }
+}

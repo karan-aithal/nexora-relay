@@ -1,0 +1,51 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--edge);
+}
+
+h2 { margin: 0; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); }
+
+.field { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.68rem; }
+.field > span { color: var(--muted); }
+
+select,
+input[type='text'],
+input[type='number'],
+input[type='password'] {
+  background: var(--bg);
+  border: 1px solid var(--edge-strong);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.25rem;
+  width: 100%;
+}
+
+input[type='range'] { width: 100%; accent-color: var(--cyan); }
+
+.row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+button {
+  background: var(--panel-hi);
+  border: 1px solid var(--edge-strong);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) { border-color: var(--cyan); }
+button:disabled { color: var(--muted); cursor: default; }
+button.danger { border-color: var(--red); color: var(--red); }
+button.armed { border-color: var(--amber); color: var(--amber); }
+
+.status { margin: 0; font-size: 0.66rem; color: var(--muted); min-height: 0.9rem; }
+
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
+.keypad button { padding: 0.35rem 0; }
+
+.pin { font-size: 1rem; letter-spacing: 0.4em; font-variant-numeric: tabular-nums; }

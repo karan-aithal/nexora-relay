@@ -1,0 +1,93 @@
+:host {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  height: 100vh;
+  min-height: 0;
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid var(--edge-strong);
+}
+
+h1 { margin: 0; font-size: 0.85rem; letter-spacing: 0.12em; }
+h1 span { color: var(--muted); font-weight: 400; margin-left: 0.5rem; letter-spacing: 0.08em; }
+.meta { font-size: 0.66rem; color: var(--muted); }
+
+.resync {
+  margin-left: auto;
+  background: var(--panel-hi);
+  border: 1px solid var(--edge-strong);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.66rem;
+  padding: 0.15rem 0.4rem;
+  cursor: pointer;
+}
+
+/* Grid + feed on the left, operator panels on the right; the drawer takes a third column when
+   a transaction is open. Everything scrolls in its own pane so the masthead and totals stay put. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'grid side' 'feed side';
+  min-height: 0;
+  overflow: hidden;
+}
+
+.layout--drawer {
+  grid-template-columns: minmax(0, 1fr) 20rem 26rem;
+  grid-template-areas: 'grid side drawer' 'feed side drawer';
+}
+
+.grid {
+  grid-area: grid;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.4rem;
+  padding: 0.5rem;
+  overflow: auto;
+}
+
+.feed { grid-area: feed; min-height: 0; border-top: 1px solid var(--edge-strong); display: flex; }
+.feed > * { flex: 1; min-height: 0; }
+
+.side { grid-area: side; overflow: auto; border-left: 1px solid var(--edge-strong); }
+.drawer { grid-area: drawer; min-height: 0; overflow: hidden; }
+
+.panel.opt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--edge);
+}
+
+.panel.opt h2 { margin: 0; font-size: 0.72rem; letter-spacing: 0.1em; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.68rem; }
+.field > span { color: var(--muted); }
+
+.field select {
+  background: var(--bg);
+  border: 1px solid var(--edge-strong);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.25rem;
+}
+
+.waiting { color: var(--muted); font-size: 0.75rem; }
+
+@media (width < 70rem) {
+  .layout,
+  .layout--drawer {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'grid' 'feed' 'side' 'drawer';
+    grid-template-rows: auto auto auto auto;
+    overflow: auto;
+  }
+}

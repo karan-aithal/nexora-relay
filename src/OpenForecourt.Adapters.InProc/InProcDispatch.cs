@@ -21,13 +21,20 @@ public sealed class InProcDispatch : ITransactionDispatch
     private readonly Channel<Delivery> _queue = Channel.CreateUnbounded<Delivery>(
         new UnboundedChannelOptions { SingleReader = true });
     private readonly ConcurrentQueue<DispatchMessage> _deadLetters = new();
+    private readonly ConcurrentQueue<DispatchMessage> _published = new();
 
     /// <summary>Messages that were dead-lettered, for test assertions.</summary>
     public IReadOnlyCollection<DispatchMessage> DeadLetters => _deadLetters.ToArray();
 
+    /// <summary>Every message published, in order, for test assertions. Independent of consumption.</summary>
+    public IReadOnlyList<DispatchMessage> Published => [.. _published];
+
     /// <inheritdoc />
-    public Task PublishAsync(DispatchMessage message, CancellationToken cancellationToken) =>
-        _queue.Writer.WriteAsync(new Delivery(message, 1), cancellationToken).AsTask();
+    public Task PublishAsync(DispatchMessage message, CancellationToken cancellationToken)
+    {
+        _published.Enqueue(message);
+        return _queue.Writer.WriteAsync(new Delivery(message, 1), cancellationToken).AsTask();
+    }
 
     /// <inheritdoc />
     public IAsyncDisposable Subscribe(Func<DispatchMessage, CancellationToken, Task<DispatchResult>> handler)

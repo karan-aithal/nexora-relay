@@ -14,6 +14,13 @@ project.lock.json
 node_modules/
 web/**/dist/
 .angular/
+web/**/out-tsc/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
 
 # Firmware build
 firmware/**/build/

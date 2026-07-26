@@ -36,6 +36,13 @@
     <ProjectReference Include="../OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
     <ProjectReference Include="../OpenForecourt.Adapters.Sqlite/OpenForecourt.Adapters.Sqlite.csproj" />
     <ProjectReference Include="../OpenForecourt.Adapters.RabbitMq/OpenForecourt.Adapters.RabbitMq.csproj" />
+    <!-- Phase 6 put the OPT and the pump link inside the site controller: the EMV kernel reads
+         the virtual card, the crypto vault tokenizes the PAN at that boundary, and the pump
+         manager drives the real firmware over OFP-1. -->
+    <ProjectReference Include="../OpenForecourt.Emv/OpenForecourt.Emv.csproj" />
+    <ProjectReference Include="../OpenForecourt.Crypto/OpenForecourt.Crypto.csproj" />
+    <ProjectReference Include="../OpenForecourt.VirtualCard/OpenForecourt.VirtualCard.csproj" />
+    <ProjectReference Include="../OpenForecourt.PumpManager/OpenForecourt.PumpManager.csproj" />
   </ItemGroup>
 
 </Project>

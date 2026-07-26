@@ -1,0 +1,98 @@
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-left: 4px solid var(--state, var(--edge-strong));
+}
+
+/* State is the first thing an operator reads across eight tiles, so it is carried by colour
+   on the left edge as well as by the word. */
+.tile[data-state='Idle'] { --state: var(--muted); }
+.tile[data-state='Authorising'] { --state: var(--amber); }
+.tile[data-state='Authorised'] { --state: var(--cyan); }
+.tile[data-state='NozzleLifted'] { --state: var(--cyan); }
+.tile[data-state='Dispensing'] { --state: var(--green); }
+.tile[data-state='DispenseComplete'] { --state: var(--green); }
+.tile[data-state='Settling'] { --state: var(--amber); }
+.tile[data-state='Error'] { --state: var(--red); }
+.tile[data-state='OutOfService'] { --state: var(--red); }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.id { color: var(--muted); }
+.state { color: var(--state, var(--fg)); font-weight: 700; }
+
+.readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.readout .value {
+  font-size: 1.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.readout .unit {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: 0.2rem;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem 0.6rem;
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.meta > div { display: flex; justify-content: space-between; gap: 0.4rem; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+footer { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+
+.chip {
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--edge-strong);
+  color: var(--muted);
+}
+
+.chip--live { color: var(--green); border-color: var(--green); }
+.chip--warn { color: var(--amber); border-color: var(--amber); }
+.chip--fault { color: var(--red); border-color: var(--red); }
+
+.opt {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--cyan);
+  min-height: 1rem;
+}
+
+.link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--cyan);
+  font: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link:disabled { color: var(--muted); cursor: default; text-decoration: none; }

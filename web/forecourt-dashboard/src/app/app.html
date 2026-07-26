@@ -1,0 +1,65 @@
+<header class="masthead">
+  <h1>OpenForecourt<span>site console</span></h1>
+  <span class="meta">
+    {{ site()?.pumpCount ?? 0 }} pumps ·
+    {{ site()?.firmwarePumps ? 'firmware dispensers' : 'no firmware fleet' }} ·
+    floor limit {{ ((site()?.floorLimitMinor ?? 0) / 100).toFixed(2) }} {{ site()?.currency }}
+  </span>
+  <button type="button" class="resync" data-testid="resync" (click)="resync()">
+    Resync ({{ live.resyncs() }})
+  </button>
+</header>
+
+<app-totals-bar [totals]="live.totals()" [status]="live.status()" />
+
+<main class="layout" [class.layout--drawer]="selectedId()">
+  <section class="grid" data-testid="pump-grid">
+    @for (pump of live.pumps(); track pump.pumpId) {
+      <app-pump-tile
+        [pump]="pump"
+        [terminal]="terminalFor(pump.pumpId)"
+        [armedCrc]="crcArmed(pump.pumpId)"
+        (inspect)="inspect(pump.transactionId)"
+      />
+    } @empty {
+      <p class="waiting">Waiting for the site controller…</p>
+    }
+  </section>
+
+  <section class="feed">
+    <app-transaction-feed
+      [transactions]="live.transactions()"
+      [selected]="selectedId()"
+      (select)="inspect($event)"
+    />
+  </section>
+
+  <aside class="side">
+    <section class="panel opt">
+      <h2>Outdoor payment terminal</h2>
+      <label class="field">
+        <span>Terminal</span>
+        <select data-testid="opt-pump" [value]="optPump()" (change)="onOptPump($event)">
+          @for (pump of live.pumps(); track pump.pumpId) {
+            <option [value]="pump.pumpId">Pump {{ pump.pumpId }}</option>
+          }
+        </select>
+      </label>
+      <app-media-loop [terminal]="selectedTerminal()" />
+    </section>
+
+    <app-card-simulator [pumps]="live.pumps()" [cards]="cards()" [terminals]="live.terminals()" />
+    <app-simulator-panel [pumps]="live.pumps()" [grades]="grades()" />
+    <app-fault-console [pumps]="live.pumps()" [faults]="live.faults()" [latestTransaction]="latest()" />
+  </aside>
+
+  @if (selectedId(); as id) {
+    <app-trace-drawer
+      class="drawer"
+      [trace]="trace()"
+      [transaction]="selectedTransaction()"
+      [transactionId]="id"
+      (closed)="closeDrawer()"
+    />
+  }
+</main>

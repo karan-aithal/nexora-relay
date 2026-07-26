@@ -37,7 +37,13 @@ dotnet test OpenForecourt.CI.slnf
 
 # Windows dev — full solution including the PC/SC and serial adapters
 dotnet test OpenForecourt.sln
+
+# Operator console (Node 24)
+cd web/forecourt-dashboard && npm ci && npm test
 ```
+
+The quickest way to see the whole thing running is `./scripts/demo-06.sh`, which brings the
+forecourt up under Docker Compose and puts the operator console on `http://localhost:8080`.
 
 ## Phases
 
@@ -290,3 +296,68 @@ ADRs: [0016 write-intent-before-send recovery](docs/adr/0016-write-intent-before
 [0018 offline authorisation & orchestration scope](docs/adr/0018-offline-authorisation-and-orchestration-scope.md),
 [0019 SignalR backpressure & PAN masking](docs/adr/0019-signalr-per-connection-backpressure.md).
 Walkthrough: [05 — Site controller](docs/walkthroughs/05-site-controller.md).
+
+### Phase 6 — Operator console, forecourt simulator, fault injection ✅
+
+The visible surface, and the phase where every previous one comes together on a single path. The
+site controller now also hosts the outdoor payment terminal, launches one **pump-firmware process
+per dispenser**, and serves an Angular operator console at `http://localhost:8080`.
+
+- **Forecourt dashboard.** An eight-pump live grid — state, metered volume, metered value, grade
+  and unit price, card brand, session elapsed, OFP-1 link state — plus a filterable transaction
+  feed, site totals and an end-of-day reconciliation readout. Angular 21, standalone components,
+  **signals only**, zoneless change detection, strict templates, no `any`.
+- **Transaction detail drawer — the full trace.** The literal APDU exchange with the card
+  (command/response hex, response TLV decoded by tag name), the ISO 8583 request and response
+  **decoded field by field**, the OFP-1 commands and events, and a **timing waterfall** over all
+  of it. Every step was captured by the component that did the work; nothing is reconstructed.
+  Sensitive fields are masked by the dialect table's own `Sensitive` flag, not by the view.
+- **The OPT runs in-process.** Presenting a card runs the real EMV kernel against the Phase 2
+  virtual card profiles. The cleartext PAN exists only inside one method, is tokenized there, and
+  never reaches the orchestrator, the journal or the queue — the P2PE boundary is now a method
+  scope, asserted by a test. Online PIN is driven by the card's CVM list, captured on an on-screen
+  keypad with a visible timeout, and encrypted under a DUKPT-derived key; the PIN block is never
+  logged, stored or traced.
+- **Real dispensers.** `PumpFleet` drives one `pump_host` process per pump over OFP-1 — the same
+  portable C core Phase 4 cross-compiles for a Cortex-M4. The volume and value on the grid are
+  metered by firmware. The firmware's host HAL gained a stdin control channel so the operator
+  panel's nozzle, flow-rate and grade controls land on the same entry points a sensor ISR calls.
+- **Pre-authorisation and settlement on delivery.** With dispensers on the path an approval is a
+  pre-auth; the transaction settles for what the meter actually delivered, and a crash mid-fuelling
+  is resumed by the existing recovery path.
+- **Fault-injection console — nothing is simulated.** Each control arms a real fault on a real
+  path: severing the acquirer link drives the site into offline authorisation; forcing a response
+  code sends the test PAN the **host** declines; corrupting a frame CRC damages the framed bytes so
+  the **firmware** rejects them and the manager retransmits; a power cut kills the firmware
+  process; suspending mid-authorisation parks the system between the journal write and the wire;
+  a forced duplicate is caught by the **acquirer's** STAN ledger.
+- **OPT media loop.** An advertising video on the terminal idle screen that pauses for the duration
+  of a transaction and resumes afterwards, driven by terminal state rather than by a click handler.
+- **Tests.** Pump-tile rendering across every `PumpState`; SignalR reconnection and full-snapshot
+  resynchronisation against a stub hub; one Playwright end-to-end fuelling driven through the
+  browser against the real stack, firmware included.
+
+Run the demo (the browser is the demo — `docker compose up` the whole forecourt, then a scripted
+fuelling and two injected faults over the same API the console uses):
+
+```bash
+./scripts/demo-06.sh          # Linux/macOS/WSL2 (Docker required)
+pwsh ./scripts/demo-06.ps1    # Windows
+```
+
+Front-end development against a running site controller:
+
+```bash
+cd web/forecourt-dashboard
+npm ci
+npm start        # http://localhost:4200, proxying /api and /hubs to :8080
+npm test         # unit tests
+npm run e2e      # Playwright; needs firmware/pump/build-host/pump_host
+```
+
+ADRs: [0020 OPT inside the site controller](docs/adr/0020-opt-inside-the-site-controller.md),
+[0021 firmware pumps on the orchestration path](docs/adr/0021-firmware-pumps-on-the-orchestration-path.md),
+[0022 pre-authorisation & settlement on delivery](docs/adr/0022-preauthorisation-and-settlement-on-delivery.md),
+[0023 faults armed, not simulated](docs/adr/0023-faults-armed-not-simulated.md),
+[0024 Angular signals & snapshot resync](docs/adr/0024-angular-signals-and-snapshot-resync.md).
+Walkthrough: [06 — Operator console](docs/walkthroughs/06-frontend.md).

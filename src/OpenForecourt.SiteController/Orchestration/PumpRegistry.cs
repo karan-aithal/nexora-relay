@@ -12,7 +12,32 @@ namespace OpenForecourt.SiteController.Orchestration;
 /// <param name="DispensedMillilitres">How much has been dispensed so far.</param>
 /// <param name="Currency">Currency of <paramref name="AuthorisedMinor"/>.</param>
 public readonly record struct PumpSnapshot(
-    int PumpId, PumpState State, Guid? TransactionId, long AuthorisedMinor, int DispensedMillilitres, string Currency);
+    int PumpId, PumpState State, Guid? TransactionId, long AuthorisedMinor, int DispensedMillilitres, string Currency)
+{
+    /// <summary>Value of the fuel delivered so far, in minor units, metered by the firmware.</summary>
+    public long DispensedMinor { get; init; }
+
+    /// <summary>The selected grade code, e.g. <c>U95</c>.</summary>
+    public string? GradeCode { get; init; }
+
+    /// <summary>Unit price the dispenser is charging, in minor units per litre.</summary>
+    public int UnitPricePerLitreMinor { get; init; }
+
+    /// <summary>Card brand read from the presented card, for the tile.</summary>
+    public string? CardBrand { get; init; }
+
+    /// <summary>When the current session started, for the elapsed-time readout.</summary>
+    public DateTimeOffset? StartedAt { get; init; }
+
+    /// <summary>The OFP-1 link state to the pump firmware: <c>Connected</c>, <c>Connecting</c>, …</summary>
+    public string Link { get; init; } = "Unknown";
+
+    /// <summary>The dispenser FSM state the firmware last reported.</summary>
+    public string DispenserState { get; init; } = "Idle";
+
+    /// <summary>True while the nozzle is out of its holster.</summary>
+    public bool NozzleUp { get; init; }
+}
 
 /// <summary>
 /// The live state of every pump, held in memory and updated as transactions progress. It is
@@ -78,10 +103,38 @@ public sealed class PumpRegistry
         }
     }
 
+    /// <summary>
+    /// Applies an arbitrary change to a pump's snapshot and broadcasts it. One mutator rather than
+    /// a setter per field: the fleet updates several fields at once from a single pump event, and a
+    /// per-field setter would broadcast a torn snapshot for each one.
+    /// </summary>
+    public void Update(int pumpId, Func<PumpSnapshot, PumpSnapshot> change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        if (!_pumps.TryGetValue(pumpId, out var existing))
+        {
+            return;
+        }
+
+        var updated = change(existing);
+        _pumps[pumpId] = updated;
+        PumpChanged?.Invoke(this, updated);
+    }
+
     /// <summary>Returns the pump to idle, clearing its transaction, and broadcasts.</summary>
+    /// <remarks>Grade, unit price and link state survive: they describe the dispenser, not the sale.</remarks>
     public void Clear(int pumpId)
     {
-        var updated = new PumpSnapshot(pumpId, PumpState.Idle, null, 0, 0, _currency);
+        var idle = new PumpSnapshot(pumpId, PumpState.Idle, null, 0, 0, _currency);
+        var updated = _pumps.TryGetValue(pumpId, out var existing)
+            ? idle with
+            {
+                GradeCode = existing.GradeCode,
+                UnitPricePerLitreMinor = existing.UnitPricePerLitreMinor,
+                Link = existing.Link,
+                DispenserState = existing.DispenserState,
+            }
+            : idle;
         _pumps[pumpId] = updated;
         PumpChanged?.Invoke(this, updated);
     }

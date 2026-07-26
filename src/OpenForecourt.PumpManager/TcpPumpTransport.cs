@@ -31,6 +31,7 @@ public sealed class TcpPumpTransport : IPumpTransport, IAsyncDisposable
     private readonly IClock _clock;
     private readonly BackoffConfig _backoff;
     private readonly Action<string>? _log;
+    private readonly Func<byte[], byte[]>? _wireMutator;
     private readonly Channel<PumpFrame> _rx =
         Channel.CreateUnbounded<PumpFrame>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
 
@@ -39,7 +40,22 @@ public sealed class TcpPumpTransport : IPumpTransport, IAsyncDisposable
     private int _started;
 
     /// <summary>Creates a transport targeting <paramref name="endPoint"/> (the firmware host).</summary>
-    public TcpPumpTransport(IPEndPoint endPoint, IClock clock, BackoffConfig? backoff = null, Action<string>? log = null)
+    /// <param name="endPoint">The firmware host's listening endpoint.</param>
+    /// <param name="clock">Clock for the reconnect backoff.</param>
+    /// <param name="backoff">Reconnect tuning; defaults are <c>docs §8</c>.</param>
+    /// <param name="log">Optional link-event log callback.</param>
+    /// <param name="wireMutator">
+    /// Optional hook applied to the fully framed bytes immediately before they hit the socket.
+    /// It exists so a line fault can be injected at the only place a line fault can occur — after
+    /// CRC and stuffing — which is what makes an injected CRC error a genuine one the firmware
+    /// detects and drops (<c>docs §5</c>), rather than a well-formed frame carrying bad data.
+    /// </param>
+    public TcpPumpTransport(
+        IPEndPoint endPoint,
+        IClock clock,
+        BackoffConfig? backoff = null,
+        Action<string>? log = null,
+        Func<byte[], byte[]>? wireMutator = null)
     {
         ArgumentNullException.ThrowIfNull(endPoint);
         ArgumentNullException.ThrowIfNull(clock);
@@ -47,6 +63,7 @@ public sealed class TcpPumpTransport : IPumpTransport, IAsyncDisposable
         _clock = clock;
         _backoff = backoff ?? new BackoffConfig();
         _log = log;
+        _wireMutator = wireMutator;
     }
 
     /// <inheritdoc />
@@ -66,6 +83,11 @@ public sealed class TcpPumpTransport : IPumpTransport, IAsyncDisposable
         }
 
         var wire = OfpWireCodec.EncodeWire(frame.Payload.Span);
+        if (_wireMutator is not null)
+        {
+            wire = _wireMutator(wire);
+        }
+
         await stream.WriteAsync(wire, cancellationToken).ConfigureAwait(false);
         await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
     }

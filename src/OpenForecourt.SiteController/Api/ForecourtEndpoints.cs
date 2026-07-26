@@ -77,15 +77,7 @@ public static class ForecourtEndpoints
         v1.MapGet("/totals", async (ITransactionJournal journal, OfflinePolicy offline, SiteOptions options, CancellationToken ct) =>
             {
                 var all = await journal.ReadAllAsync(ct).ConfigureAwait(false);
-                var totals = new TotalsView(
-                    Currency: options.Currency,
-                    Completed: all.Count(t => t.Status == TransactionStatus.Completed),
-                    Declined: all.Count(t => t.Status == TransactionStatus.Declined),
-                    Reversed: all.Count(t => t.Status == TransactionStatus.Reversed),
-                    OfflinePending: all.Count(t => t.Offline && t.Status == TransactionStatus.Approved),
-                    CompletedValueMinor: all.Where(t => t.Status == TransactionStatus.Completed).Sum(t => t.Amount.Minor),
-                    OfflineExposureMinor: offline.CurrentExposure);
-                return TypedResults.Ok(totals);
+                return TypedResults.Ok(TotalsView.From(all, offline.CurrentExposure, options.Currency));
             })
             .WithSummary("Returns site transaction totals.");
     }

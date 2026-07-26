@@ -200,6 +200,574 @@
           }
         }
       }
+    },
+    "/api/v1/site": {
+      "get": {
+        "tags": [
+          "Site"
+        ],
+        "summary": "Static site configuration: currency, pumps, grades and card profiles.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteInfoView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/{id}/trace": {
+      "get": {
+        "tags": [
+          "Forecourt"
+        ],
+        "summary": "The full trace of a transaction: APDU exchange, ISO 8583 messages, pump commands, timings.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionTraceView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/opt": {
+      "get": {
+        "tags": [
+          "OPT"
+        ],
+        "summary": "The screen state of every outdoor payment terminal.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OptView"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/opt/{id}/card": {
+      "post": {
+        "tags": [
+          "OPT"
+        ],
+        "summary": "Presents a test card at a pump and runs the EMV flow to a decision.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresentCardBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/opt/{id}/pin": {
+      "post": {
+        "tags": [
+          "OPT"
+        ],
+        "summary": "Submits the online PIN for a terminal that is waiting for one.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/opt/{id}/cancel": {
+      "post": {
+        "tags": [
+          "OPT"
+        ],
+        "summary": "Cancels the card session at a terminal.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/opt/{id}/idle": {
+      "post": {
+        "tags": [
+          "OPT"
+        ],
+        "summary": "Returns a terminal to its idle screen and media loop.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/pumps/{id}/nozzle/{action}": {
+      "post": {
+        "tags": [
+          "Simulator"
+        ],
+        "summary": "Lifts or holsters a pump's nozzle. Holstering mid-dispense stops the fuelling.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/pumps/{id}/flow": {
+      "post": {
+        "tags": [
+          "Simulator"
+        ],
+        "summary": "Sets a pump's flow rate in millilitres per flow-meter tick.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlowBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/pumps/{id}/grade": {
+      "post": {
+        "tags": [
+          "Simulator"
+        ],
+        "summary": "Selects a fuel grade, pushing its unit price into the dispenser firmware.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GradeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/pumps/{id}/suspend": {
+      "post": {
+        "tags": [
+          "Simulator"
+        ],
+        "summary": "Pauses an in-progress dispense.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/simulator/pumps/{id}/resume": {
+      "post": {
+        "tags": [
+          "Simulator"
+        ],
+        "summary": "Resumes a paused dispense.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/faults": {
+      "get": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "The currently armed faults.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/host": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Severs or slows the acquirer link, or forces a specific response code.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HostFaultBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/suspend": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Freezes every authorisation between the journal write and the host request.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/resume": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Releases authorisations held by /faults/suspend.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/pumps/{id}/corrupt-crc": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Corrupts the next outbound OFP-1 frame after framing, so the firmware's CRC check rejects it.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/pumps/{id}/power/{state}": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Kills or restarts a pump's firmware process — a real power cut.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "state",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaultState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/faults/duplicate/{id}": {
+      "post": {
+        "tags": [
+          "Faults"
+        ],
+        "summary": "Re-sends an existing transaction to the acquirer to show duplicate detection.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateResult"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -266,6 +834,363 @@
         },
         "description": "The request body for an authorisation."
       },
+      "CardProfileView": {
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "brand"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The profile file's stem, used to select it."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "kind": {
+            "type": "string",
+            "description": "Contact, Contactless, …"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Card brand inferred from the primary AID."
+          }
+        },
+        "description": "A card the simulator offers, as the dashboard sees it."
+      },
+      "DuplicateResult": {
+        "required": [
+          "transactionId",
+          "outcome",
+          "authorisationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "The transaction that was re-sent.",
+            "format": "uuid"
+          },
+          "outcome": {
+            "type": "string",
+            "description": "What the host returned the second time."
+          },
+          "authorisationCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The authorisation code, if the host still returned one."
+          }
+        },
+        "description": "The acquirer's answer to a deliberately duplicated request."
+      },
+      "FaultState": {
+        "required": [
+          "hostLinkDown",
+          "hostLatencyMs",
+          "forcedResponsePan",
+          "suspended",
+          "crcArmedPumps",
+          "poweredOffPumps"
+        ],
+        "type": "object",
+        "properties": {
+          "hostLinkDown": {
+            "type": "boolean",
+            "description": "The acquirer link is severed."
+          },
+          "hostLatencyMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Artificial latency added to every host exchange.",
+            "format": "int32"
+          },
+          "forcedResponsePan": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Test PAN steering the host simulator to a chosen response code."
+          },
+          "suspended": {
+            "type": "boolean",
+            "description": "Authorisations are held between the journal write and the host request."
+          },
+          "crcArmedPumps": {
+            "type": "array",
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            },
+            "description": "Pumps whose next outbound OFP-1 frame will be corrupted."
+          },
+          "poweredOffPumps": {
+            "type": "array",
+            "items": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            },
+            "description": "Pumps whose firmware process has been killed."
+          }
+        },
+        "description": "The fault console's view of what is currently armed."
+      },
+      "FlowBody": {
+        "required": [
+          "millilitresPerTick"
+        ],
+        "type": "object",
+        "properties": {
+          "millilitresPerTick": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Millilitres the meter delivers per tick.",
+            "format": "int32"
+          }
+        },
+        "description": "Body for a flow-rate change."
+      },
+      "GradeBody": {
+        "required": [
+          "gradeCode"
+        ],
+        "type": "object",
+        "properties": {
+          "gradeCode": {
+            "type": "string",
+            "description": "The grade code to select."
+          }
+        },
+        "description": "Body for a grade change."
+      },
+      "GradeView": {
+        "required": [
+          "code",
+          "name",
+          "pricePerLitreMinor"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Grade code."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "pricePerLitreMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Unit price in minor units per litre.",
+            "format": "int32"
+          }
+        },
+        "description": "One fuel grade as the dashboard shows it."
+      },
+      "HostFaultBody": {
+        "required": [
+          "down",
+          "latencyMs",
+          "responseCode"
+        ],
+        "type": "object",
+        "properties": {
+          "down": {
+            "type": [
+              "null",
+              "boolean"
+            ],
+            "description": "Sever (true) or restore (false) the acquirer link."
+          },
+          "latencyMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Artificial latency on every host exchange, in milliseconds.",
+            "format": "int32"
+          },
+          "responseCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Acquirer response code to force: `00`, `51`, `05`, `91` or null to clear."
+          }
+        },
+        "description": "Body for the host-link fault controls."
+      },
+      "OptResult": {
+        "required": [
+          "accepted",
+          "decision",
+          "transactionId",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "description": "True when the customer may fuel."
+          },
+          "decision": {
+            "type": "string",
+            "description": "The authorisation decision, or a rejection reason code."
+          },
+          "transactionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The transaction, when one was opened.",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string",
+            "description": "The line shown on the terminal."
+          }
+        },
+        "description": "The outcome of an OPT interaction."
+      },
+      "OptView": {
+        "required": [
+          "pumpId",
+          "stage",
+          "message",
+          "cardBrand",
+          "maskedPan",
+          "cvm",
+          "transactionId",
+          "deadlineAt"
+        ],
+        "type": "object",
+        "properties": {
+          "pumpId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The pump this terminal serves.",
+            "format": "int32"
+          },
+          "stage": {
+            "type": "string",
+            "description": "What the terminal is doing."
+          },
+          "message": {
+            "type": "string",
+            "description": "The line shown to the customer."
+          },
+          "cardBrand": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Brand of the presented card, if any."
+          },
+          "maskedPan": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The PAN as the terminal displays it: first 6 and last 4 only."
+          },
+          "cvm": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The cardholder verification method the kernel selected."
+          },
+          "transactionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The transaction, once one exists.",
+            "format": "uuid"
+          },
+          "deadlineAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the current step times out, for the countdown.",
+            "format": "date-time"
+          }
+        },
+        "description": "The OPT's screen state for one pump, broadcast to the dashboard."
+      },
+      "PinBody": {
+        "required": [
+          "pin"
+        ],
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "string",
+            "description": "The digits typed by the customer."
+          }
+        },
+        "description": "Body for the OPT PIN pad."
+      },
+      "PresentCardBody": {
+        "required": [
+          "cardId",
+          "amountMinor",
+          "entryMode"
+        ],
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string",
+            "description": "A profile id from the card catalogue."
+          },
+          "amountMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "The pre-authorisation amount, in minor units.",
+            "format": "int64"
+          },
+          "entryMode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "How the card was presented: `Contact`, `Contactless` or `MagstripeFallback`."
+          }
+        },
+        "description": "Body for presenting a card at an OPT."
+      },
       "PumpSnapshot": {
         "type": "object",
         "properties": {
@@ -311,6 +1236,58 @@
           "currency": {
             "type": "string",
             "description": "Currency of AuthorisedMinor."
+          },
+          "dispensedMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Value of the fuel delivered so far, in minor units, metered by the firmware.",
+            "format": "int64"
+          },
+          "gradeCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The selected grade code, e.g. `U95`."
+          },
+          "unitPricePerLitreMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Unit price the dispenser is charging, in minor units per litre.",
+            "format": "int32"
+          },
+          "cardBrand": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Card brand read from the presented card, for the tile."
+          },
+          "startedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "When the current session started, for the elapsed-time readout.",
+            "format": "date-time"
+          },
+          "link": {
+            "type": "string",
+            "description": "The OFP-1 link state to the pump firmware: `Connected`, `Connecting`, …"
+          },
+          "dispenserState": {
+            "type": "string",
+            "description": "The dispenser FSM state the firmware last reported."
+          },
+          "nozzleUp": {
+            "type": "boolean",
+            "description": "True while the nozzle is out of its holster."
           }
         },
         "description": "A point-in-time view of one pump, as broadcast to dashboards."
@@ -328,6 +1305,60 @@
           "OutOfService"
         ],
         "description": "The lifecycle state of a single fuel pump within a fuelling session."
+      },
+      "SiteInfoView": {
+        "required": [
+          "currency",
+          "pumpCount",
+          "floorLimitMinor",
+          "firmwarePumps",
+          "grades",
+          "cards"
+        ],
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217 currency for every amount on the site."
+          },
+          "pumpCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "How many pumps the grid should render.",
+            "format": "int32"
+          },
+          "floorLimitMinor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Per-transaction offline floor limit.",
+            "format": "int64"
+          },
+          "firmwarePumps": {
+            "type": "boolean",
+            "description": "True when the pumps are real firmware processes, not journal-driven state."
+          },
+          "grades": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GradeView"
+            },
+            "description": "The grades on sale."
+          },
+          "cards": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardProfileView"
+            },
+            "description": "The test cards the card simulator can present."
+          }
+        },
+        "description": "Static site configuration the dashboard reads once at start-up."
       },
       "TotalsView": {
         "required": [
@@ -401,6 +1432,126 @@
           }
         },
         "description": "Totals across the journal."
+      },
+      "TraceField": {
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Field or tag label, already numbered where the protocol numbers things."
+          },
+          "value": {
+            "type": "string",
+            "description": "The value, masked if the protocol marks the field sensitive."
+          }
+        },
+        "description": "One decoded name/value pair inside a trace step (an EMV tag, an ISO 8583 field)."
+      },
+      "TraceStep": {
+        "required": [
+          "seq",
+          "kind",
+          "label",
+          "elapsedMs",
+          "durationMs",
+          "hex",
+          "fields"
+        ],
+        "type": "object",
+        "properties": {
+          "seq": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "1-based ordinal within the trace.",
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string",
+            "description": "One of `apdu`, `iso8583`, `pump`, `lifecycle`."
+          },
+          "label": {
+            "type": "string",
+            "description": "Short human label, e.g. `SELECT` or `0200 Financial request`."
+          },
+          "elapsedMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Milliseconds from the first step in the trace — the waterfall offset.",
+            "format": "double"
+          },
+          "durationMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "How long the exchange itself took — the waterfall bar width.",
+            "format": "double"
+          },
+          "hex": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Raw wire bytes, uppercase hex, where the exchange has any."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceField"
+            },
+            "description": "The decoded view of Hex."
+          }
+        },
+        "description": "One observable exchange in a transaction's life: a card APDU, an ISO 8583 message, an\nOFP-1 pump command, or a lifecycle marker."
+      },
+      "TransactionTraceView": {
+        "required": [
+          "transactionId",
+          "startedAt",
+          "totalMs",
+          "steps"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "description": "The transaction, or Guid Guid.Empty for an unbound trace.",
+            "format": "uuid"
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "When the first step was recorded.",
+            "format": "date-time"
+          },
+          "totalMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Wall-clock span from the first step to the end of the last.",
+            "format": "double"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TraceStep"
+            },
+            "description": "Every step, in time order."
+          }
+        },
+        "description": "A whole transaction trace, ready for the dashboard's detail drawer."
       },
       "TransactionView": {
         "required": [
@@ -481,6 +1632,18 @@
   "tags": [
     {
       "name": "Forecourt"
+    },
+    {
+      "name": "Site"
+    },
+    {
+      "name": "OPT"
+    },
+    {
+      "name": "Simulator"
+    },
+    {
+      "name": "Faults"
     }
   ]
 }

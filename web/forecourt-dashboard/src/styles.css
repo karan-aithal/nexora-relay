@@ -1,0 +1,36 @@
+/* Operator console, not a consumer dashboard: dense, high contrast, monospace throughout so
+   hex traces and decoded fields line up. One dark theme — a forecourt back office is dim and
+   the board is read at a glance from across the room. */
+:root {
+  --bg: #0b0f14;
+  --panel: #121820;
+  --panel-hi: #1a222c;
+  --edge: #1e2731;
+  --edge-strong: #2b3846;
+  --fg: #dbe4ee;
+  --muted: #7b8b9e;
+  --cyan: #4fd1e0;
+  --green: #59d98a;
+  --amber: #e8b34a;
+  --red: #ef6a6a;
+  --violet: #a98bf0;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', 'Cascadia Mono', 'DejaVu Sans Mono', ui-monospace, monospace;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 1px solid var(--cyan); outline-offset: 1px; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--edge-strong); }
+::-webkit-scrollbar-track { background: transparent; }

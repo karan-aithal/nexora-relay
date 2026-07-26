@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The OPT tests run the real EMV kernel against the same virtual card profiles the
+         Phase 2 tests use. Test PANs only (CLAUDE.md section 7.1). -->
+    <None Include="../testdata/cards/*.json" Link="cards/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../testdata/keys/bdk.hex" Link="keys/bdk.hex" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../../src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj" />
     <ProjectReference Include="../../src/OpenForecourt.Adapters.InProc/OpenForecourt.Adapters.InProc.csproj" />
     <ProjectReference Include="../../src/OpenForecourt.Adapters.Sqlite/OpenForecourt.Adapters.Sqlite.csproj" />

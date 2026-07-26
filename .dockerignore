@@ -6,4 +6,9 @@
 **/*.db-wal
 **/*.db-shm
 web/**/dist/
+web/**/.angular/
+web/**/test-results/
+web/**/playwright-report/
 firmware/**/build/
+firmware/**/build-host/
+firmware/**/build-target/
