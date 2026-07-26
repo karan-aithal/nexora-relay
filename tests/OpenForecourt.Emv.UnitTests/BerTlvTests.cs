@@ -5,12 +5,14 @@ namespace OpenForecourt.Emv.UnitTests;
 
 public sealed class BerTlvTests
 {
-    public static TheoryData<string> GoldenFiles =>
-    [
+    // Built by construction rather than from a collection expression: the expression lowers to
+    // an empty-array allocation plus Add calls, which CA1825 flags on newer analyzer versions.
+    public static TheoryData<string> GoldenFiles => new()
+    {
         "ppse-fci.hex",
         "pse-fci.hex",
         "generate-ac.hex",
-    ];
+    };
 
     [Theory]
     [MemberData(nameof(GoldenFiles))]
