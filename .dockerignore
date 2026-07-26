@@ -1,3 +1,8 @@
+# The SDK pin is for the build gate (CI) and for developer machines. The dotnet sdk:10.0 base
+# image ships a feature band this repository does not pin to, and no image tag matches, so the
+# container build is deliberately left to use the image's own SDK. See global.json.
+global.json
+
 **/bin/
 **/obj/
 **/node_modules/

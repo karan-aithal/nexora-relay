@@ -13,10 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # global.json pins the SDK, so CI compiles with the same analyzer set as a developer
+      # machine. Without it a new SDK patch can add an analyzer rule that fails the build here
+      # and nowhere else (warnings are errors — CLAUDE.md section 6).
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       # OpenForecourt.CI.slnf excludes the Windows-only adapters
       # (Adapters.Pcsc, Adapters.Serial — net10.0-windows), which cannot
@@ -101,7 +104,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       - uses: actions/setup-node@v4
         with:
@@ -118,6 +121,14 @@ jobs:
           cmake -S firmware/pump -B firmware/pump/build-host -DHAL=host
           cmake --build firmware/pump/build-host
 
+      # Playwright starts the site controller and the acquirer simulator with `dotnet run`.
+      # Building them here means that start-up is a launch, not a cold restore-and-compile,
+      # which is what the webServer timeout is actually budgeted for.
+      - name: Build the site controller and the acquirer simulator
+        run: |
+          dotnet build src/OpenForecourt.SiteController/OpenForecourt.SiteController.csproj -c Release
+          dotnet build src/OpenForecourt.HostSimulator/OpenForecourt.HostSimulator.csproj -c Release
+
       - name: Install dashboard dependencies
         working-directory: web/forecourt-dashboard
         run: npm ci
@@ -130,10 +141,12 @@ jobs:
         working-directory: web/forecourt-dashboard
         run: npm run e2e
 
-      - name: Upload the Playwright report on failure
+      # Traces are written per failing test; there is no HTML report under the CI reporter.
+      - name: Upload Playwright traces on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: web/forecourt-dashboard/playwright-report/
+          name: playwright-traces
+          path: web/forecourt-dashboard/test-results/
+          if-no-files-found: ignore
           retention-days: 7

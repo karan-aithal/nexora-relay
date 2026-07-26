@@ -1,0 +1,9 @@
+{
+  "//": "Pins the SDK for the build gate, so CI compiles with the same analyzer binaries as a developer machine. <AnalysisLevel>latest-recommended</AnalysisLevel> plus warnings-as-errors (CLAUDE.md section 6) means 'latest' tracks the SDK: CI was resolving the 10.0.3xx feature band while development ran 10.0.1xx, and the newer analyzers failed the build on code that had been clean for phases. rollForward is 'disable' on purpose — a near-enough SDK is exactly what this prevents. Bump deliberately, then fix what the newer analyzers find.",
+  "//dockerNote": "src/OpenForecourt.SiteController/Dockerfile builds against the mcr sdk:10.0 image, which currently ships 10.0.302 and has no tag matching this version. global.json is therefore excluded from the Docker build context (.dockerignore); the container build floats exactly as it did before this file existed. The gate is CI, and the gate is pinned.",
+  "sdk": {
+    "version": "10.0.110",
+    "rollForward": "disable",
+    "allowPrerelease": false
+  }
+}
