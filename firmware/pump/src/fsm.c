@@ -21,7 +21,9 @@ static const ofp_fsm_result TABLE[6][OFP_FSM_EVENT_COUNT] = {
 
 ofp_fsm_result ofp_fsm_next(uint8_t state, ofp_fsm_event ev)
 {
-    if (state > OFP_STATE_FAULT || (int)ev < 0 || (int)ev >= OFP_FSM_EVENT_COUNT)
+    /* Unsigned compare: catches both a negative event cast in by a caller and an
+     * over-range one, without a `< 0` test the target's unsigned enum makes dead code. */
+    if (state > OFP_STATE_FAULT || (unsigned)ev >= OFP_FSM_EVENT_COUNT)
     {
         ofp_fsm_result bad = ILL;
         return bad;
