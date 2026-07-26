@@ -66,8 +66,9 @@ static uint32_t be32(const uint8_t *b)
 
 int main(void)
 {
-    capframe fr[64];
-    capframe f;
+    /* zero-init: cppcheck cannot see that scan_tx() fills fr before find_last() reads it */
+    capframe fr[64] = {0};
+    capframe f = {0};
     fake_hal_reset();
 
     ofp_pump_config cfg = {
