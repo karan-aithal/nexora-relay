@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Puts a "Run workflow" button on the Actions tab, so a run can be triggered by hand
+  # against any branch without pushing a commit.
+  workflow_dispatch:
 
 jobs:
   build-test:
