@@ -13,10 +13,15 @@ project.lock.json
 # Node / Angular
 node_modules/
 web/**/dist/
-.angular/
+web/**/.angular/
+web/**/test-results/
 
 # Firmware build
 firmware/**/build/
+firmware/pump/build-host/
+
+# Local artifacts
+src/OpenForecourt.SiteController/forecourt-journal.db*
 
 # Secrets — never commit (CLAUDE.md section 7.6)
 *.pfx
